@@ -1,158 +1,152 @@
 import React from 'react';
-import { Zap, Droplets, BrickWall, Hammer, Flame, Check, Shield } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { Zap, Droplets, Hammer, BrickWall, Flame, Paintbrush, Check, Wrench } from 'lucide-react';
 
 export default function Professions() {
-  const professions = [
+  const { t } = useLanguage();
+
+  const tradeList = [
     {
       id: 'electrician',
-      name: 'Electrician',
-      hindiName: 'विद्युत कर्मी / इलेक्ट्रीशियन',
       icon: Zap,
-      color: 'amber',
-      accent: 'text-amber-600 bg-amber-50 border-amber-200',
+      image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80',
+      name: t('professions.electrician.name', 'Electrician'),
+      nativeName: t('professions.electrician.nativeName', 'Electrician / विद्युत कर्मी'),
+      desc: t('professions.electrician.desc', 'Conduit laying, DB panel termination, circuit load calculations, and earthing diagnostics.'),
+      task: t('professions.electrician.task', 'Conduit bending, MCB termination and complete circuit continuity testing.'),
       badge: 'High Demand',
-      skills: [
-        'Single & 3-phase wiring systems',
-        'Circuit breaker & MCB installation',
-        'Load calculation & fault isolation',
-        'Earthing & industrial safety standards'
-      ],
-      practicalTask: 'Conduit laying, DB termination & continuity testing'
     },
     {
       id: 'plumber',
-      name: 'Plumber',
-      hindiName: 'प्लंबर / जल संयोजन विशेषज्ञ',
       icon: Droplets,
-      color: 'sky',
-      accent: 'text-sky-600 bg-sky-50 border-sky-200',
+      image: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80',
+      name: t('professions.plumber.name', 'Plumber'),
+      nativeName: t('professions.plumber.nativeName', 'Plumber / प्लंबर'),
+      desc: t('professions.plumber.desc', 'CPVC/UPVC pipe network routing, hydrostatic leak checks, sanitary fittings, and pump setup.'),
+      task: t('professions.plumber.task', 'Multi-joint line assembly and high-pressure leak testing without failure.'),
       badge: 'Essential Trade',
-      skills: [
-        'CPVC/UPVC pipe network routing',
-        'Hydrostatic pressure leak testing',
-        'Sanitary fixtures & drainage slope',
-        'Overhead & underground pump setup'
-      ],
-      practicalTask: 'Multi-joint line assembly & pressure test without leak'
-    },
-    {
-      id: 'mason',
-      name: 'Mason',
-      hindiName: 'राजमिस्त्री / भवन निर्माण शिल्पी',
-      icon: BrickWall,
-      color: 'orange',
-      accent: 'text-orange-600 bg-orange-50 border-orange-200',
-      badge: 'Infrastructure Core',
-      skills: [
-        'Brick/block masonry alignment & plumb',
-        'Mortar mixing ratios & hydration',
-        'Smooth & rough plastering finishes',
-        'RCC column shuttering alignment'
-      ],
-      practicalTask: 'Constructing a 90-degree plumb corner wall within tolerance'
     },
     {
       id: 'carpenter',
-      name: 'Carpenter',
-      hindiName: 'बढ़ई / काष्ठ शिल्पी',
       icon: Hammer,
-      color: 'amber',
-      accent: 'text-yellow-700 bg-yellow-50 border-yellow-200',
+      image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80',
+      name: t('professions.carpenter.name', 'Carpenter'),
+      nativeName: t('professions.carpenter.nativeName', 'Carpenter / बढ़ई'),
+      desc: t('professions.carpenter.desc', 'Mortise & tenon joinery, modular carcass assembly, hardware fitting, and laminate finishing.'),
+      task: t('professions.carpenter.task', 'Fabricating a square joint frame with flush hardware and level alignment.'),
       badge: 'Finish Craft',
-      skills: [
-        'Mortise, tenon & precision lap joinery',
-        'Modular cabinet & carcass framing',
-        'Hardware, hinge & sliding fitting',
-        'Laminate pressing & edge banding'
-      ],
-      practicalTask: 'Fabricating a square joint frame with flush hardware'
+    },
+    {
+      id: 'mason',
+      icon: BrickWall,
+      image: 'https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=600&q=80',
+      name: t('professions.mason.name', 'Mason'),
+      nativeName: t('professions.mason.nativeName', 'Mason / राजमिस्त्री'),
+      desc: t('professions.mason.desc', 'Right-angle brick alignment, mortar mixing hydration, level plastering, and RCC shuttering.'),
+      task: t('professions.mason.task', 'Constructing a 90-degree plumb corner wall within structural tolerance.'),
+      badge: 'Structural Core',
     },
     {
       id: 'welder',
-      name: 'Welder',
-      hindiName: 'वेल्डर / धातु संयोजन शिल्पी',
       icon: Flame,
-      color: 'rose',
-      accent: 'text-rose-600 bg-rose-50 border-rose-200',
+      image: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=600&q=80',
+      name: t('professions.welder.name', 'Welder'),
+      nativeName: t('professions.welder.nativeName', 'Welder / वेल्डर'),
+      desc: t('professions.welder.desc', 'SMAW/MIG weld penetration, bevel preparation, slag cleanup, and thermal PPE safety.'),
+      task: t('professions.welder.task', 'Multi-pass fillet and butt weld with bend test crack resistance.'),
       badge: 'Fabrication Core',
-      skills: [
-        'SMAW (Shielded Metal Arc Welding)',
-        'MIG/MAG & Gas cutting techniques',
-        'Weld penetration & slag cleanup',
-        'Safety PPE & spark hazard control'
-      ],
-      practicalTask: 'Butt and fillet weld pass with bend test compliance'
-    }
+    },
+    {
+      id: 'painter',
+      icon: Paintbrush,
+      image: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=600&q=80',
+      name: t('professions.painter.name', 'Painter'),
+      nativeName: t('professions.painter.nativeName', 'Painter / पेंटर'),
+      desc: t('professions.painter.desc', 'Wall preparation, putty smoothening, primer leveling, uniform roller coating, and weatherproofing.'),
+      task: t('professions.painter.task', 'Surface sanding, 2-coat putty smoothening and flawless topcoat finish.'),
+      badge: 'Finishing Trade',
+    },
   ];
 
   return (
-    <section id="professions" className="py-20 bg-slate-50 border-t border-slate-200">
+    <section id="professions" className="py-16 sm:py-24 bg-white border-t border-beige">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 text-brand-800 text-xs font-bold uppercase tracking-wider mb-3 border border-brand-200">
-            <Shield className="w-3.5 h-3.5 text-brand-600" />
-            Vocational Trades
+        <div className="text-center max-w-3xl mx-auto mb-14">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ivory border border-beige text-terracotta text-xs font-bold uppercase tracking-wider mb-3">
+            <Wrench className="w-3.5 h-3.5 text-terracotta" />
+            <span>{t('professions.badge', 'Vocational Trades')}</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Trades Covered by SkillSetu
+
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-teal tracking-tight font-heading">
+            {t('professions.title', 'Trades Covered by SkillSetu')}
           </h2>
-          <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
-            Standardized practical verification tailored to the specific tools, standards, and job requirements of India's vocational trades.
+
+          <p className="mt-3 text-base sm:text-lg text-greygreen">
+            {t('professions.subtitle', 'Standardized practical benchmarks tailored to the core craftsmanship of Indian vocational trades.')}
           </p>
         </div>
 
-        {/* Professions Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {professions.map((trade) => {
+        {/* 6 Professions Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+          {tradeList.map((trade) => {
             const Icon = trade.icon;
             return (
-              <div 
+              <div
                 key={trade.id}
-                className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                className="bg-ivory rounded-3xl overflow-hidden border border-beige shadow-xs hover:shadow-lg hover:border-terracotta/40 transition-all flex flex-col justify-between group"
               >
                 <div>
-                  {/* Top Bar with Icon and Badge */}
-                  <div className="flex items-start justify-between gap-3 mb-4">
-                    <div className={`p-3 rounded-xl border ${trade.accent}`}>
-                      <Icon className="w-6 h-6" />
+                  {/* Photo Header */}
+                  <div className="relative h-44 overflow-hidden bg-beige/30">
+                    <img
+                      src={trade.image}
+                      alt={`${trade.name} craftsmanship task`}
+                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-teal-950/80 via-teal-950/20 to-transparent" />
+                    
+                    {/* Badge */}
+                    <div className="absolute top-3.5 right-3.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-white/90 backdrop-blur-md text-teal px-2.5 py-1 rounded-full border border-beige shadow-xs">
+                        {trade.badge}
+                      </span>
                     </div>
-                    <span className="text-[11px] font-bold uppercase tracking-wide bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full border border-slate-200">
-                      {trade.badge}
-                    </span>
+
+                    {/* Trade Icon & Title on Overlay */}
+                    <div className="absolute bottom-3.5 left-4 right-4 flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-terracotta text-white flex items-center justify-center shadow-md">
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <div className="text-white">
+                        <h3 className="text-lg font-bold font-heading leading-tight drop-shadow-xs">
+                          {trade.name}
+                        </h3>
+                        <p className="text-[11px] text-ivory/90 font-medium">
+                          {trade.nativeName}
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Title & Hindi Subtitle */}
-                  <h3 className="text-xl font-bold text-slate-900">
-                    {trade.name}
-                  </h3>
-                  <p className="text-xs font-semibold text-slate-500 mb-4">
-                    {trade.hindiName}
-                  </p>
-
-                  {/* Skills Checklist */}
-                  <div className="space-y-2 mb-6">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                      Verified Capabilities:
-                    </span>
-                    {trade.skills.map((skill, sIdx) => (
-                      <div key={sIdx} className="flex items-start gap-2 text-xs text-slate-700">
-                        <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                        <span>{skill}</span>
-                      </div>
-                    ))}
+                  {/* Body Content */}
+                  <div className="p-5 sm:p-6">
+                    <p className="text-xs sm:text-sm text-greygreen leading-relaxed mb-4">
+                      {trade.desc}
+                    </p>
                   </div>
                 </div>
 
-                {/* Practical Verification Task Preview */}
-                <div className="pt-4 border-t border-slate-100 bg-slate-50/70 -mx-6 -mb-6 p-4 rounded-b-2xl">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                    Hands-on Assessment Task:
+                {/* Practical Assessment Task Footer */}
+                <div className="p-4 sm:p-5 bg-white border-t border-beige/70">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-terracotta mb-1">
+                    {t('professions.verifiedTasks', 'Hands-on Assessment Task:')}
                   </div>
-                  <div className="text-xs text-slate-800 font-medium italic">
-                    "{trade.practicalTask}"
-                  </div>
+                  <p className="text-xs text-teal font-medium italic">
+                    "{trade.task}"
+                  </p>
                 </div>
 
               </div>

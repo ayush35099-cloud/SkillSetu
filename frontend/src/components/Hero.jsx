@@ -1,87 +1,142 @@
 import React from 'react';
-import { ArrowRight, CheckCircle, ShieldCheck, Award, Users, HardHat, Compass } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { ArrowRight, Compass, ShieldCheck, Award, Users, Mic, CheckCircle } from 'lucide-react';
 
-export default function Hero({ onOpenGetStarted, onOpenExplore }) {
+export default function Hero({ onOpenGetStarted, onOpenHowItWorks }) {
+  const { t } = useLanguage();
+
   return (
-    <section id="hero" className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28 bg-gradient-to-b from-white via-orange-50/20 to-slate-50">
+    <section id="hero" className="relative overflow-hidden pt-10 pb-16 lg:pt-16 lg:pb-24 bg-gradient-to-b from-ivory via-ivory-100 to-ivory">
       
-      {/* Background Decorative Accents */}
-      <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/4 w-96 h-96 bg-brand-200/40 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 translate-y-12 -translate-x-1/4 w-96 h-96 bg-amber-200/30 rounded-full blur-3xl pointer-events-none" />
+      {/* Subtle Warm Background Glows */}
+      <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/4 w-96 h-96 bg-terracotta-100/30 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 translate-y-12 -translate-x-1/4 w-96 h-96 bg-beige/40 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="text-center max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           
-          {/* Track Tagline Pill */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-800 text-xs sm:text-sm font-semibold mb-6 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-brand-600 animate-pulse"></span>
-            <span>Track 4 – UnlockED: Localized Vocational Skill Verification</span>
+          {/* Left Column: Text & CTAs */}
+          <div className="lg:col-span-7 text-left">
+            
+            {/* Track Tagline Pill */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-beige text-terracotta-700 text-xs font-bold uppercase tracking-wider mb-6 shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-terracotta animate-pulse"></span>
+              <span>{t('hero.badge', 'Track 4 – UnlockED: Localized Vocational Skill Verification')}</span>
+            </div>
+
+            {/* Main Heading */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-teal tracking-tight leading-[1.12] font-heading">
+              {t('hero.heading', 'Your skills deserve to be recognised.')}
+            </h1>
+
+            {/* Supporting Tagline */}
+            <p className="mt-4 text-xl sm:text-2xl font-bold text-terracotta font-heading">
+              {t('hero.subheading', 'Show your skills. Get recognised. Discover better opportunities.')}
+            </p>
+
+            {/* Description */}
+            <p className="mt-5 text-base sm:text-lg text-greygreen leading-relaxed max-w-2xl">
+              {t('hero.description', 'SkillSetu is a dedicated community platform designed for India’s skilled blue-collar workers. Verify your practical trade craft, establish a trusted digital identity, and connect directly with verified contractors.')}
+            </p>
+
+            {/* Call to Action Buttons */}
+            <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+              <button
+                type="button"
+                onClick={onOpenGetStarted}
+                className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl bg-terracotta hover:bg-terracotta-600 text-white font-bold text-base shadow-md shadow-terracotta/20 transition-all transform active:scale-95"
+              >
+                <span>{t('hero.ctaPrimary', 'Get Started')}</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={onOpenHowItWorks}
+                className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl bg-white hover:bg-beige/30 text-teal font-bold text-base border border-beige shadow-xs transition-all"
+              >
+                <Compass className="w-5 h-5 text-terracotta" />
+                <span>{t('hero.ctaSecondary', 'How It Works')}</span>
+              </button>
+            </div>
+
+            {/* 4 Trust Feature Points */}
+            <div className="mt-10 pt-8 border-t border-beige grid grid-cols-2 sm:grid-cols-4 gap-4 text-left">
+              <div>
+                <div className="flex items-center gap-1.5 text-teal font-bold text-xs sm:text-sm font-heading">
+                  <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
+                  <span>{t('hero.trustPractical', 'Practical')}</span>
+                </div>
+                <p className="text-[11px] text-greygreen mt-0.5 leading-snug">{t('hero.trustPracticalSub', 'Hands-on tasks')}</p>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-1.5 text-teal font-bold text-xs sm:text-sm font-heading">
+                  <Award className="w-4 h-4 text-terracotta shrink-0" />
+                  <span>{t('hero.trustId', 'Trade ID')}</span>
+                </div>
+                <p className="text-[11px] text-greygreen mt-0.5 leading-snug">{t('hero.trustIdSub', 'Digital credential')}</p>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-1.5 text-teal font-bold text-xs sm:text-sm font-heading">
+                  <Users className="w-4 h-4 text-teal-600 shrink-0" />
+                  <span>{t('hero.trustDirect', 'Direct Link')}</span>
+                </div>
+                <p className="text-[11px] text-greygreen mt-0.5 leading-snug">{t('hero.trustDirectSub', 'Zero middlemen')}</p>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-1.5 text-teal font-bold text-xs sm:text-sm font-heading">
+                  <Mic className="w-4 h-4 text-amber-700 shrink-0" />
+                  <span>{t('hero.trustVoice', '7 Languages')}</span>
+                </div>
+                <p className="text-[11px] text-greygreen mt-0.5 leading-snug">{t('hero.trustVoiceSub', 'Mother tongue')}</p>
+              </div>
+            </div>
+
           </div>
 
-          {/* Main Heading */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.15]">
-            Your Skills. <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 via-amber-600 to-orange-500">Your Identity.</span> Your Future.
-          </h1>
+          {/* Right Column: Authentic Documentary Photography Montage */}
+          <div className="lg:col-span-5 relative">
+            <div className="relative rounded-3xl overflow-hidden border-4 border-white shadow-xl bg-beige/30">
+              {/* Primary Authentic Artisan Photo */}
+              <img
+                src="https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=900&q=80"
+                alt="Authentic skilled Indian craftsman shaping metal and wood with precision tools"
+                className="w-full h-[420px] object-cover object-center transform hover:scale-102 transition-transform duration-500"
+                loading="eager"
+              />
 
-          {/* Short Description */}
-          <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed font-normal">
-            SkillSetu is a dedicated platform designed for India's skilled blue-collar workforce. We bridge electricians, plumbers, masons, carpenters, and welders with verified credentials and direct contractor opportunities.
-          </p>
+              {/* Gradient Scrim for readable overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-teal-900/85 via-teal-900/20 to-transparent" />
 
-          {/* Call-to-Action Buttons */}
-          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a
-              href="#verification"
-              onClick={onOpenGetStarted}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-700 hover:to-amber-700 text-white font-bold text-base shadow-lg shadow-brand-500/25 transition-all transform active:scale-[0.98]"
-            >
-              Get Started
-              <ArrowRight className="w-5 h-5" />
-            </a>
-
-            <a
-              href="#professions"
-              onClick={onOpenExplore}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-base border border-slate-300 shadow-sm transition-all"
-            >
-              <Compass className="w-5 h-5 text-brand-600" />
-              Explore SkillSetu
-            </a>
-          </div>
-
-          {/* Trust Highlights */}
-          <div className="mt-12 pt-8 border-t border-slate-200/80 grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
-            <div className="p-3 bg-white rounded-xl border border-slate-100 shadow-xs">
-              <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                Practical Testing
+              {/* Bottom Card Overlay with Cultural Dignity */}
+              <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/20 backdrop-blur-md text-[11px] font-bold tracking-wide uppercase mb-1.5 border border-white/20">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>श्रम की पहचान • Dignity of Craft</span>
+                </div>
+                <h3 className="text-base sm:text-lg font-bold font-heading text-white leading-snug">
+                  "हमारा काम ही हमारी पहचान है।"
+                </h3>
+                <p className="text-xs text-ivory/80 mt-0.5">
+                  Over 100,000 skilled hands building India's future every day.
+                </p>
               </div>
-              <p className="text-xs text-slate-500 mt-1">Hands-on assessment over theory tests</p>
             </div>
 
-            <div className="p-3 bg-white rounded-xl border border-slate-100 shadow-xs">
-              <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                <Award className="w-4 h-4 text-brand-600 shrink-0" />
-                Digital Trade ID
+            {/* Small Floating Badge Card */}
+            <div className="hidden sm:flex absolute -bottom-5 -left-6 bg-white p-3.5 rounded-2xl border border-beige shadow-lg items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-terracotta-50 text-terracotta flex items-center justify-center font-bold text-sm font-heading">
+                6+
               </div>
-              <p className="text-xs text-slate-500 mt-1">Verifiable identity for skilled workers</p>
+              <div className="text-xs">
+                <p className="font-bold text-teal font-heading">Certified Trades</p>
+                <p className="text-[11px] text-greygreen">Electrician to Painter</p>
+              </div>
             </div>
 
-            <div className="p-3 bg-white rounded-xl border border-slate-100 shadow-xs">
-              <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                <Users className="w-4 h-4 text-amber-600 shrink-0" />
-                Direct Linkage
-              </div>
-              <p className="text-xs text-slate-500 mt-1">Connect with verified contractors</p>
-            </div>
-
-            <div className="p-3 bg-white rounded-xl border border-slate-100 shadow-xs">
-              <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                <HardHat className="w-4 h-4 text-blue-600 shrink-0" />
-                Localized Focus
-              </div>
-              <p className="text-xs text-slate-500 mt-1">Built specifically for Indian trades</p>
-            </div>
           </div>
 
         </div>

@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { LanguageProvider } from './context/LanguageContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import LanguageModal from './components/LanguageModal';
+import VoiceAssistantPill from './components/VoiceAssistantPill';
 import Home from './pages/Home';
 import { apiService } from './services/api';
 
-export default function App() {
+function AppContent() {
   const [backendStatus, setBackendStatus] = useState('checking'); // 'checking' | 'connected' | 'disconnected'
   const [dbStatus, setDbStatus] = useState(null);
   const [backendInfo, setBackendInfo] = useState(null);
@@ -46,14 +49,30 @@ export default function App() {
     checkHealth();
   }, [checkHealth]);
 
+  const handleOpenGetStarted = () => {
+    const el = document.getElementById('how-it-works');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleOpenLogin = () => {
+    const el = document.getElementById('system-status');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+    <div className="min-h-screen flex flex-col bg-ivory text-teal font-body selection:bg-terracotta/20 selection:text-terracotta-800">
+      {/* First-visit Language Selection Modal */}
+      <LanguageModal />
+
+      {/* Navigation */}
       <Navbar
         backendStatus={backendStatus}
-        dbStatus={dbStatus}
         onRefreshStatus={checkHealth}
+        onOpenGetStarted={handleOpenGetStarted}
+        onOpenLogin={handleOpenLogin}
       />
       
+      {/* Page Routing */}
       <div className="flex-1">
         <Routes>
           <Route
@@ -69,7 +88,6 @@ export default function App() {
               />
             }
           />
-          {/* Catch-all route to redirect back to home */}
           <Route
             path="*"
             element={
@@ -86,7 +104,19 @@ export default function App() {
         </Routes>
       </div>
 
+      {/* Floating Multilingual Voice Assistant Pill */}
+      <VoiceAssistantPill />
+
+      {/* Community Footer */}
       <Footer />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }

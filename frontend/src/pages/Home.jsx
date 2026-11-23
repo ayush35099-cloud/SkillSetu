@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import Hero from '../components/Hero';
-import StatusIndicator from '../components/StatusIndicator';
-import SkillVerification from '../components/SkillVerification';
+import About from '../components/About';
+import HowItWorks from '../components/HowItWorks';
 import Professions from '../components/Professions';
+import StatusIndicator from '../components/StatusIndicator';
 import { Info, X } from 'lucide-react';
 
 export default function Home({
@@ -13,45 +15,52 @@ export default function Home({
   isRefreshing,
   onRefreshStatus
 }) {
+  const { t } = useLanguage();
   const [notice, setNotice] = useState(null);
 
   const handleGetStarted = (e) => {
-    // In Phase 1, we show a clean informative banner/modal as required:
-    // "Important: These are static homepage elements only. Do not implement actual registration or login. Do not add fake functionality to buttons."
-    e.preventDefault();
-    const target = document.getElementById('verification');
+    if (e && e.preventDefault) e.preventDefault();
+    const target = document.getElementById('how-it-works');
     if (target) {
       target.scrollIntoView({ behavior: 'smooth' });
     }
     setNotice({
-      title: "Phase 1 Foundation Active",
-      message: "Worker onboarding, practical video submissions, and contractor matching modules will be introduced in subsequent project phases. Explore the verified trades and system architecture below."
+      title: t('notice.getStartedTitle', 'Registration & Onboarding'),
+      message: t('notice.getStartedBody', 'Worker onboarding and practical video submissions will open in the next phase. Explore the supported trades and verification methodology below.')
     });
   };
 
-  const handleExplore = (e) => {
-    e.preventDefault();
-    const target = document.getElementById('professions');
+  const handleHowItWorks = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const target = document.getElementById('how-it-works');
     if (target) {
       target.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const handleLogin = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setNotice({
+      title: 'Login & Verification Portal',
+      message: 'Worker and Contractor credential login will be enabled in the authentication phase. System foundation is active.'
+    });
   };
 
   return (
     <main>
       {/* Informative Notice Banner (if triggered) */}
       {notice && (
-        <div className="bg-brand-50 border-b border-brand-200 px-4 py-3 text-brand-900 transition-all">
+        <div className="bg-terracotta-50 border-b border-terracotta-200 px-4 py-3 text-terracotta-800 transition-all">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-xs sm:text-sm">
             <div className="flex items-center gap-2">
-              <Info className="w-4 h-4 text-brand-600 shrink-0" />
+              <Info className="w-4 h-4 text-terracotta shrink-0" />
               <span>
-                <strong className="font-semibold">{notice.title}:</strong> {notice.message}
+                <strong className="font-bold">{notice.title}:</strong> {notice.message}
               </span>
             </div>
             <button
               onClick={() => setNotice(null)}
-              className="text-brand-700 hover:text-brand-900 font-bold p-1"
+              className="text-terracotta hover:text-terracotta-800 font-bold p-1"
             >
               <X className="w-4 h-4" />
             </button>
@@ -62,10 +71,21 @@ export default function Home({
       {/* Hero Section */}
       <Hero
         onOpenGetStarted={handleGetStarted}
-        onOpenExplore={handleExplore}
+        onOpenHowItWorks={handleHowItWorks}
       />
 
-      {/* Backend & DB Status Indicator */}
+      {/* About Section */}
+      <About />
+
+      {/* How It Works Section */}
+      <HowItWorks
+        onOpenGetStarted={handleGetStarted}
+      />
+
+      {/* Professions Covered (All 6 Trades) */}
+      <Professions />
+
+      {/* System Status & Backend Monitoring */}
       <StatusIndicator
         backendStatus={backendStatus}
         dbStatus={dbStatus}
@@ -74,12 +94,6 @@ export default function Home({
         isRefreshing={isRefreshing}
         onRefresh={onRefreshStatus}
       />
-
-      {/* Introduction to Skill Verification */}
-      <SkillVerification />
-
-      {/* Example Professions */}
-      <Professions />
     </main>
   );
 }

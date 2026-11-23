@@ -1,0 +1,60 @@
+export const SUPPORTED_LANGUAGES = [
+  {
+    code: 'hi',
+    name: 'Hindi',
+    nativeName: 'हिन्दी',
+    script: 'Devanagari',
+    region: 'उत्तर एवं मध्य भारत',
+    greeting: 'नमस्ते',
+  },
+  {
+    code: 'bn',
+    name: 'Bengali',
+    nativeName: 'বাংলা',
+    script: 'Bengali',
+    region: 'পশ্চিমবঙ্গ ও ত্রিপুরা',
+    greeting: 'নমস্কার',
+  },
+  {
+    code: 'mr',
+    name: 'Marathi',
+    nativeName: 'मराठी',
+    script: 'Devanagari',
+    region: 'महाराष्ट्र',
+    greeting: 'नमस्कार',
+  },
+  {
+    code: 'te',
+    name: 'Telugu',
+    nativeName: 'తెలుగు',
+    script: 'Telugu',
+    region: 'తెలంగాణ / ఆంధ్రప్రదేశ్',
+    greeting: 'నమస్కారం',
+  },
+  {
+    code: 'ta',
+    name: 'Tamil',
+    nativeName: 'தமிழ்',
+    script: 'Tamil',
+    region: 'தமிழ்நாடு',
+    greeting: 'வணக்கம்',
+  },
+  {
+    code: 'kn',
+    name: 'Kannada',
+    nativeName: 'ಕನ್ನಡ',
+    script: 'Kannada',
+    region: 'ಕರ್ನಾಟಕ',
+    greeting: 'ನಮಸ್ಕಾರ',
+  },
+  {
+    code: 'en',
+    name: 'English',
+    nativeName: 'English',
+    script: 'Latin',
+    region: 'All India',
+    greeting: 'Welcome',
+  },
+];
+
+export const DEFAULT_LANGUAGE = 'hi';

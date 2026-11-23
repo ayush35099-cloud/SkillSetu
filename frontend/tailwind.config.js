@@ -7,23 +7,54 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: '#fff7ed',
-          100: '#ffedd5',
-          200: '#fed7aa',
-          300: '#fdba74',
-          400: '#fb923c',
-          500: '#f97316', // Saffron / Vibrant warm orange representing Indian craftsmanship
-          600: '#ea580c',
-          700: '#c2410c',
-          800: '#9a3412',
-          900: '#7c2d12',
+        // SkillSetu Brand Palette
+        ivory: {
+          50: '#FDFCF9',
+          100: '#FAF8F3',
+          DEFAULT: '#F6F3EB', // Warm Ivory
+          200: '#EFE9DC',
+          300: '#E5DCB8',
+          dark: '#E0D6C3',
         },
-        navy: {
-          800: '#1e293b',
-          900: '#0f172a',
-          950: '#020617',
+        teal: {
+          50: '#E8F0F1',
+          100: '#C7DCE0',
+          500: '#265D65',
+          DEFAULT: '#183E43', // Deep Teal
+          600: '#143539',
+          700: '#0F272B',
+          900: '#0A1B1E',
+        },
+        terracotta: {
+          50: '#FBF5F3',
+          100: '#F5E4DE',
+          200: '#EACAC0',
+          500: '#C77056',
+          DEFAULT: '#B45D43', // Terracotta
+          600: '#A04E36',
+          700: '#8A3F2A',
+          800: '#6C2F1E',
+        },
+        beige: {
+          50: '#FAF8F5',
+          100: '#F3EFE8',
+          DEFAULT: '#D9CDBB', // Sand Beige
+          200: '#CDBFA9',
+          300: '#BDAE95',
+          dark: '#AB9B81',
+        },
+        greygreen: {
+          50: '#F2F4F3',
+          100: '#DFE4E2',
+          DEFAULT: '#52615C', // Muted Grey-Green
+          600: '#43504C',
+          700: '#343E3B',
+          800: '#242C2A',
         }
+      },
+      fontFamily: {
+        heading: ['"DM Sans"', 'sans-serif'],
+        body: ['Inter', '"Noto Sans"', '"Noto Sans Devanagari"', '"Noto Sans Bengali"', '"Noto Sans Telugu"', '"Noto Sans Tamil"', '"Noto Sans Kannada"', 'sans-serif'],
       }
     },
   },
