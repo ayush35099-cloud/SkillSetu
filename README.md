@@ -18,9 +18,9 @@
 | Component | Target Platform | Live URL / Endpoint |
 |---|---|---|
 | **Frontend UI** | GitHub Pages | [https://ayush35099-cloud.github.io/SkillSetu/](https://ayush35099-cloud.github.io/SkillSetu/) |
-| **Backend REST API** | Render | [https://skillsetu-backend.onrender.com](https://skillsetu-backend.onrender.com) |
-| **Backend Health Check** | Render | [https://skillsetu-backend.onrender.com/api/health](https://skillsetu-backend.onrender.com/api/health) |
-| **Database Health Check**| Render | [https://skillsetu-backend.onrender.com/api/health/db](https://skillsetu-backend.onrender.com/api/health/db) |
+| **Backend REST API** | Render | [https://skillsetu-backend-47ww.onrender.com](https://skillsetu-backend-47ww.onrender.com) |
+| **Backend Health Check** | Render | [https://skillsetu-backend-47ww.onrender.com/api/health](https://skillsetu-backend-47ww.onrender.com/api/health) |
+| **Database Health Check**| Render | [https://skillsetu-backend-47ww.onrender.com/api/health/db](https://skillsetu-backend-47ww.onrender.com/api/health/db) |
 | **GitHub Repository** | GitHub | [https://github.com/ayush35099-cloud/SkillSetu](https://github.com/ayush35099-cloud/SkillSetu) |
 
 ---
