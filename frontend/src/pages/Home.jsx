@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import Hero from '../components/Hero';
 import About from '../components/About';
@@ -16,18 +17,12 @@ export default function Home({
   onRefreshStatus
 }) {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [notice, setNotice] = useState(null);
 
   const handleGetStarted = (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    const target = document.getElementById('how-it-works');
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
-    setNotice({
-      title: t('notice.getStartedTitle', 'Registration & Onboarding'),
-      message: t('notice.getStartedBody', 'Worker onboarding and practical video submissions will open in the next phase. Explore the supported trades and verification methodology below.')
-    });
+    navigate('/worker');
   };
 
   const handleHowItWorks = (e) => {

@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import LanguageModal from './components/LanguageModal';
+import LoginModal from './components/LoginModal';
 import VoiceAssistantPill from './components/VoiceAssistantPill';
 import Home from './pages/Home';
+import WorkerLayout from './components/worker/WorkerLayout';
+import WorkerDashboard from './pages/worker/WorkerDashboard';
+import WorkerProfile from './pages/worker/WorkerProfile';
+import WorkerSkills from './pages/worker/WorkerSkills';
+import SkillPassport from './pages/worker/SkillPassport';
 import { apiService } from './services/api';
 
 function AppContent() {
@@ -14,6 +20,7 @@ function AppContent() {
   const [backendInfo, setBackendInfo] = useState(null);
   const [lastChecked, setLastChecked] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
 
   const checkHealth = useCallback(async () => {
     setIsRefreshing(true);
@@ -49,32 +56,28 @@ function AppContent() {
     checkHealth();
   }, [checkHealth]);
 
-  const handleOpenGetStarted = () => {
-    const el = document.getElementById('how-it-works');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleOpenLogin = () => {
-    const el = document.getElementById('system-status');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-ivory text-teal font-body selection:bg-terracotta/20 selection:text-terracotta-800">
       {/* First-visit Language Selection Modal */}
       <LanguageModal />
 
-      {/* Navigation */}
+      {/* Role Selection / Login Modal */}
+      <LoginModal 
+        isOpen={loginModalOpen} 
+        onClose={() => setLoginModalOpen(false)} 
+      />
+
+      {/* Primary Navigation */}
       <Navbar
         backendStatus={backendStatus}
         onRefreshStatus={checkHealth}
-        onOpenGetStarted={handleOpenGetStarted}
-        onOpenLogin={handleOpenLogin}
+        onOpenLogin={() => setLoginModalOpen(true)}
       />
       
-      {/* Page Routing */}
+      {/* Application Routing */}
       <div className="flex-1">
         <Routes>
+          {/* Public Landing Page */}
           <Route
             path="/"
             element={
@@ -88,19 +91,17 @@ function AppContent() {
               />
             }
           />
-          <Route
-            path="*"
-            element={
-              <Home
-                backendStatus={backendStatus}
-                dbStatus={dbStatus}
-                backendInfo={backendInfo}
-                lastChecked={lastChecked}
-                isRefreshing={isRefreshing}
-                onRefreshStatus={checkHealth}
-              />
-            }
-          />
+
+          {/* Dedicated Worker Experience Experience Routes */}
+          <Route path="/worker" element={<WorkerLayout />}>
+            <Route index element={<WorkerDashboard />} />
+            <Route path="profile" element={<WorkerProfile />} />
+            <Route path="skills" element={<WorkerSkills />} />
+            <Route path="passport" element={<SkillPassport />} />
+          </Route>
+
+          {/* Fallback to Home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
 

@@ -66,6 +66,26 @@ export default function Professions() {
       task: t('professions.painter.task', 'Surface sanding, 2-coat putty smoothening and flawless topcoat finish.'),
       badge: 'Finishing Trade',
     },
+    {
+      id: 'mechanic',
+      icon: Wrench,
+      image: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=600&q=80',
+      name: t('professions.mechanic.name', 'Mechanic'),
+      nativeName: t('professions.mechanic.nativeName', 'Mechanic / मैकेनिक'),
+      desc: t('professions.mechanic.desc', 'Engine diagnostics, brake shoe replacement, transmission servicing, and electrical system troubleshooting.'),
+      task: t('professions.mechanic.task', 'Four-stroke engine compression test, brake caliper overhaul and diagnostic scan.'),
+      badge: 'Diagnostics & Repair',
+    },
+    {
+      id: 'other',
+      icon: BrickWall,
+      image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80',
+      name: t('professions.other.name', 'Other Trades'),
+      nativeName: t('professions.other.nativeName', 'Other Trades / अन्य हुनर'),
+      desc: t('professions.other.desc', 'Masonry tiling, scaffolding, bar bending, waterproofing, HVAC ducting, and specialized fabrication.'),
+      task: t('professions.other.task', 'Standardized task demonstration tailored to your trade craftsmanship.'),
+      badge: 'Specialized Trades',
+    },
   ];
 
   return (

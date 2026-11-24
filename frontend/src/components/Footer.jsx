@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { HardHat, Globe, ExternalLink, Heart } from 'lucide-react';
 
@@ -67,6 +68,7 @@ export default function Footer() {
               Quick Links
             </h4>
             <ul className="space-y-2 text-xs text-ivory/60">
+              <li><Link to="/worker" className="text-terracotta-300 hover:text-white font-bold transition-colors">Worker Portal</Link></li>
               <li><a href="#about" className="hover:text-white transition-colors">{t('nav.about', 'About')}</a></li>
               <li><a href="#how-it-works" className="hover:text-white transition-colors">{t('nav.howItWorks', 'How It Works')}</a></li>
               <li><a href="#professions" className="hover:text-white transition-colors">{t('nav.professions', 'Professions')}</a></li>
