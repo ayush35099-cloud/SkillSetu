@@ -1,25 +1,37 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Zap, Droplets, Hammer, BrickWall, Flame, Paintbrush, Check, Wrench } from 'lucide-react';
+import { getTradePhoto } from '../services/photoService';
+import { 
+  Zap, 
+  Droplets, 
+  Hammer, 
+  Building, 
+  Flame, 
+  Paintbrush, 
+  Wrench, 
+  Cog, 
+  Layers, 
+  Check, 
+  Camera,
+  MapPin
+} from 'lucide-react';
 
 export default function Professions() {
   const { t } = useLanguage();
 
-  const tradeList = [
+  const trades = [
     {
       id: 'electrician',
       icon: Zap,
-      image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80',
       name: t('professions.electrician.name', 'Electrician'),
       nativeName: t('professions.electrician.nativeName', 'Electrician / विद्युत कर्मी'),
       desc: t('professions.electrician.desc', 'Conduit laying, DB panel termination, circuit load calculations, and earthing diagnostics.'),
       task: t('professions.electrician.task', 'Conduit bending, MCB termination and complete circuit continuity testing.'),
-      badge: 'High Demand',
+      badge: 'Core Trade',
     },
     {
       id: 'plumber',
       icon: Droplets,
-      image: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80',
       name: t('professions.plumber.name', 'Plumber'),
       nativeName: t('professions.plumber.nativeName', 'Plumber / प्लंबर'),
       desc: t('professions.plumber.desc', 'CPVC/UPVC pipe network routing, hydrostatic leak checks, sanitary fittings, and pump setup.'),
@@ -29,7 +41,6 @@ export default function Professions() {
     {
       id: 'carpenter',
       icon: Hammer,
-      image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80',
       name: t('professions.carpenter.name', 'Carpenter'),
       nativeName: t('professions.carpenter.nativeName', 'Carpenter / बढ़ई'),
       desc: t('professions.carpenter.desc', 'Mortise & tenon joinery, modular carcass assembly, hardware fitting, and laminate finishing.'),
@@ -38,8 +49,7 @@ export default function Professions() {
     },
     {
       id: 'mason',
-      icon: BrickWall,
-      image: 'https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=600&q=80',
+      icon: Building,
       name: t('professions.mason.name', 'Mason'),
       nativeName: t('professions.mason.nativeName', 'Mason / राजमिस्त्री'),
       desc: t('professions.mason.desc', 'Right-angle brick alignment, mortar mixing hydration, level plastering, and RCC shuttering.'),
@@ -49,7 +59,6 @@ export default function Professions() {
     {
       id: 'welder',
       icon: Flame,
-      image: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=600&q=80',
       name: t('professions.welder.name', 'Welder'),
       nativeName: t('professions.welder.nativeName', 'Welder / वेल्डर'),
       desc: t('professions.welder.desc', 'SMAW/MIG weld penetration, bevel preparation, slag cleanup, and thermal PPE safety.'),
@@ -59,7 +68,6 @@ export default function Professions() {
     {
       id: 'painter',
       icon: Paintbrush,
-      image: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=600&q=80',
       name: t('professions.painter.name', 'Painter'),
       nativeName: t('professions.painter.nativeName', 'Painter / पेंटर'),
       desc: t('professions.painter.desc', 'Wall preparation, putty smoothening, primer leveling, uniform roller coating, and weatherproofing.'),
@@ -68,107 +76,109 @@ export default function Professions() {
     },
     {
       id: 'mechanic',
-      icon: Wrench,
-      image: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=600&q=80',
+      icon: Cog,
       name: t('professions.mechanic.name', 'Mechanic'),
       nativeName: t('professions.mechanic.nativeName', 'Mechanic / मैकेनिक'),
-      desc: t('professions.mechanic.desc', 'Engine diagnostics, brake shoe replacement, transmission servicing, and electrical system troubleshooting.'),
+      desc: t('professions.mechanic.desc', 'Engine diagnostics, brake shoe replacement, transmission servicing, and electrical troubleshooting.'),
       task: t('professions.mechanic.task', 'Four-stroke engine compression test, brake caliper overhaul and diagnostic scan.'),
       badge: 'Diagnostics & Repair',
     },
     {
       id: 'other',
-      icon: BrickWall,
-      image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80',
+      icon: Layers,
       name: t('professions.other.name', 'Other Trades'),
       nativeName: t('professions.other.nativeName', 'Other Trades / अन्य हुनर'),
-      desc: t('professions.other.desc', 'Masonry tiling, scaffolding, bar bending, waterproofing, HVAC ducting, and specialized fabrication.'),
+      desc: t('professions.other.desc', 'Tile fixing, scaffolding, bar bending, waterproofing, HVAC ducting, and specialized fabrication.'),
       task: t('professions.other.task', 'Standardized task demonstration tailored to your trade craftsmanship.'),
       badge: 'Specialized Trades',
     },
   ];
 
   return (
-    <section id="professions" className="py-16 sm:py-24 bg-white border-t border-beige">
+    <section id="professions" className="py-16 sm:py-24 bg-white dark:bg-charcoal-900 border-t border-beige dark:border-charcoal-700 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ivory border border-beige text-terracotta text-xs font-bold uppercase tracking-wider mb-3">
-            <Wrench className="w-3.5 h-3.5 text-terracotta" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ivory dark:bg-charcoal-800 border border-beige dark:border-charcoal-700 text-terracotta dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-3">
+            <Wrench className="w-3.5 h-3.5" />
             <span>{t('professions.badge', 'Vocational Trades')}</span>
           </div>
-
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-teal tracking-tight font-heading">
+          <h2 className="text-3xl sm:text-4xl font-black text-teal dark:text-ivory font-heading">
             {t('professions.title', 'Trades Covered by SkillSetu')}
           </h2>
-
-          <p className="mt-3 text-base sm:text-lg text-greygreen">
+          <p className="mt-3 text-base sm:text-lg text-greygreen dark:text-ivory/70">
             {t('professions.subtitle', 'Standardized practical benchmarks tailored to the core craftsmanship of Indian vocational trades.')}
           </p>
         </div>
 
-        {/* 6 Professions Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-          {tradeList.map((trade) => {
+        {/* 8 Trades Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {trades.map((trade) => {
             const Icon = trade.icon;
+            const photo = getTradePhoto(trade.id);
             return (
-              <div
-                key={trade.id}
-                className="bg-ivory rounded-3xl overflow-hidden border border-beige shadow-xs hover:shadow-lg hover:border-terracotta/40 transition-all flex flex-col justify-between group"
+              <div 
+                key={trade.id} 
+                className="bg-ivory dark:bg-charcoal-800 rounded-3xl border border-beige dark:border-charcoal-700 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col group"
               >
-                <div>
-                  {/* Photo Header */}
-                  <div className="relative h-44 overflow-hidden bg-beige/30">
-                    <img
-                      src={trade.image}
-                      alt={`${trade.name} craftsmanship task`}
-                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-teal-950/80 via-teal-950/20 to-transparent" />
-                    
-                    {/* Badge */}
-                    <div className="absolute top-3.5 right-3.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider bg-white/90 backdrop-blur-md text-teal px-2.5 py-1 rounded-full border border-beige shadow-xs">
-                        {trade.badge}
-                      </span>
+                {/* Authentic Documentary Photo with attribution */}
+                <div className="relative h-48 overflow-hidden bg-sand-200 dark:bg-charcoal-700">
+                  <img
+                    src={photo.url}
+                    alt={photo.alt}
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80";
+                    }}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                  
+                  {/* Scrim */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-teal-950/80 via-transparent to-transparent" />
+
+                  {/* Top Badge */}
+                  <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-teal-900/80 backdrop-blur-sm text-[10px] font-bold text-ivory border border-white/20">
+                    {trade.badge}
+                  </span>
+
+                  {/* Photo Attribution Pill */}
+                  <span className="absolute bottom-2 left-3 inline-flex items-center gap-1 text-[9px] text-ivory/80 bg-teal-950/60 backdrop-blur-xs px-2 py-0.5 rounded">
+                    <Camera className="w-2.5 h-2.5" />
+                    <span>{photo.credit.split('/')[0]}</span>
+                  </span>
+                </div>
+
+                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="p-1.5 rounded-lg bg-teal dark:bg-charcoal-700 text-white">
+                        <Icon className="w-4 h-4 text-terracotta-200" />
+                      </div>
+                      <h3 className="text-lg font-bold text-teal dark:text-ivory font-heading">
+                        {trade.name}
+                      </h3>
                     </div>
 
-                    {/* Trade Icon & Title on Overlay */}
-                    <div className="absolute bottom-3.5 left-4 right-4 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-terracotta text-white flex items-center justify-center shadow-md">
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <div className="text-white">
-                        <h3 className="text-lg font-bold font-heading leading-tight drop-shadow-xs">
-                          {trade.name}
-                        </h3>
-                        <p className="text-[11px] text-ivory/90 font-medium">
-                          {trade.nativeName}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                    <p className="text-xs font-semibold text-terracotta dark:text-amber-400 mb-2">
+                      {trade.nativeName}
+                    </p>
 
-                  {/* Body Content */}
-                  <div className="p-5 sm:p-6">
-                    <p className="text-xs sm:text-sm text-greygreen leading-relaxed mb-4">
+                    <p className="text-xs text-greygreen dark:text-ivory/70 leading-relaxed">
                       {trade.desc}
                     </p>
                   </div>
-                </div>
 
-                {/* Practical Assessment Task Footer */}
-                <div className="p-4 sm:p-5 bg-white border-t border-beige/70">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-terracotta mb-1">
-                    {t('professions.verifiedTasks', 'Hands-on Assessment Task:')}
+                  {/* Hands-on Task Box */}
+                  <div className="p-3 rounded-2xl bg-white dark:bg-charcoal-900 border border-beige dark:border-charcoal-700">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-teal dark:text-ivory/80 block mb-1">
+                      {t('professions.verifiedTasks', 'Hands-on Assessment Task')}:
+                    </span>
+                    <p className="text-xs text-teal-950 dark:text-ivory font-medium leading-relaxed">
+                      {trade.task}
+                    </p>
                   </div>
-                  <p className="text-xs text-teal font-medium italic">
-                    "{trade.task}"
-                  </p>
                 </div>
-
               </div>
             );
           })}

@@ -156,7 +156,25 @@ export const translations = {
       authNotice: 'Full mobile OTP & voice authentication is coming in future phases. For now, continue directly to test the Worker experience.',
       close: 'Close',
     },
+    theme: {
+      light: 'Light',
+      dark: 'Dark',
+      system: 'System',
+    },
+    region: {
+      selectBtn: 'Region',
+      title: 'Select Indian Region / State',
+      subtitle: 'Language and region are independent. Tailor local projects, photos, and contractor networks.',
+      searchPlaceholder: 'Search state, city hub, or territory (e.g. Karnataka, Bengaluru, Mumbai)...',
+      filterAll: 'All Regions',
+      filterStates: '28 States',
+      filterUT: '8 Union Territories',
+    },
+
     worker: {
+      demoProfileBadge: 'Demo Worker Profile',
+      demoBannerBody: 'Worker data, skills, and passport credentials shown here are interactive sample previews for usability testing. They are not official government certifications or trade licenses.',
+      demoBannerTitle: 'PROTOTYPE DEMONSTRATION MODE',
       nav: {
         dashboard: 'Dashboard',
         profile: 'My Profile',
@@ -424,7 +442,25 @@ export const translations = {
       authNotice: 'पूर्ण मोबाइल ओटीपी एवं वॉयस लॉगिन आगामी चरणों में उपलब्ध होगा। अभी कारीगर अनुभव देखने के लिए जारी रखें।',
       close: 'बंद करें',
     },
+    theme: {
+      light: 'हल्का (लाइट)',
+      dark: 'गहरा (डार्क)',
+      system: 'सिस्टम',
+    },
+    region: {
+      selectBtn: 'राज्य / क्षेत्र',
+      title: 'भारतीय राज्य या केंद्र शासित प्रदेश चुनें',
+      subtitle: 'भाषा और क्षेत्र दो अलग प्राथमिकताएं हैं। स्थानीय कार्य और कारीगर नेटवर्क देखें।',
+      searchPlaceholder: 'राज्य, शहर या क्षेत्र खोजें (जैसे कर्नाटक, बेंगलुरु, मुंबई)...',
+      filterAll: 'सभी क्षेत्र',
+      filterStates: '28 राज्य',
+      filterUT: '8 केंद्र शासित प्रदेश',
+    },
+
     worker: {
+      demoProfileBadge: 'डेमो कारीगर प्रोफ़ाइल',
+      demoBannerBody: 'यहाँ दिखाए गए कारीगर विवरण और स्किल पासपोर्ट केवल उपयोगिता मूल्यांकन हेतु नमूने हैं। यह कोई आधिकारिक सरकारी प्रमाण-पत्र या लाइसेंस नहीं हैं।',
+      demoBannerTitle: 'प्रोटोटाइप प्रदर्शन मोड',
       nav: {
         dashboard: 'डैशबोर्ड',
         profile: 'मेरी प्रोफ़ाइल',
@@ -692,7 +728,25 @@ export const translations = {
       authNotice: 'সম্পূর্ণ মোবাইল ওটিপি ও ভয়েস প্রমাণীকরণ পরবর্তী ধাপে আসবে। কর্মী অভিজ্ঞতা পরীক্ষা করতে চালিয়ে যান।',
       close: 'বন্ধ করুন',
     },
+    theme: {
+      light: 'হালকা',
+      dark: 'গাঢ়',
+      system: 'সিস্টেম',
+    },
+    region: {
+      selectBtn: 'রাজ্য / অঞ্চল',
+      title: 'ভারতের রাজ্য বা কেন্দ্রশাসিত অঞ্চল নির্বাচন করুন',
+      subtitle: 'ভাষা এবং অঞ্চল সম্পূর্ণ স্বাধীন পছন্দ। স্থানীয় প্রকল্প ও কারিগর নেটওয়ার্ক দেখুন।',
+      searchPlaceholder: 'রাজ্য, শহর বা অঞ্চল খুঁজুন (যেমন কর্ণাটক, কলকাতা, মুম্বাই)...',
+      filterAll: 'সমস্ত অঞ্চল',
+      filterStates: '২৮টি রাজ্য',
+      filterUT: '৮টি কেন্দ্রশাসিত অঞ্চল',
+    },
+
     worker: {
+      demoProfileBadge: 'ডেমো কারিগর প্রোফাইল',
+      demoBannerBody: 'এখানে প্রদর্শিত কারিগরের বিবরণ ও স্কিল পাসপোর্ট শুধুমাত্র পরীক্ষার নমুনা। এটি কোনো সরকারি শংসাপত্র বা ট্রেড লাইসেন্স নয়।',
+      demoBannerTitle: 'প্রোটোটাইপ প্রদর্শন মোড',
       nav: {
         dashboard: 'ড্যাশবোর্ড',
         profile: 'আমার প্রোফাইল',
@@ -960,7 +1014,25 @@ export const translations = {
       authNotice: 'संपूर्ण मोबाइल ओटीपी आणि व्हॉइस लॉगिन आगामी टप्प्यात उपलब्ध होईल. कारागीर अनुभव तपासण्यासाठी पुढे जा.',
       close: 'बंद करा',
     },
+    theme: {
+      light: 'हलका',
+      dark: 'गडद',
+      system: 'सिस्टम',
+    },
+    region: {
+      selectBtn: 'राज्य / प्रदेश',
+      title: 'भारतीय राज्य किंवा केंद्रशासित प्रदेश निवडा',
+      subtitle: 'भाषा आणि प्रदेश स्वतंत्र प्राधान्ये आहेत. स्थानिक काम आणि कंत्राटदार नेटवर्क पहा.',
+      searchPlaceholder: 'राज्य, शहर किंवा प्रदेश शोधा (उदा. महाराष्ट्र, मुंबई, पुणे)...',
+      filterAll: 'सर्व प्रदेश',
+      filterStates: '२८ राज्ये',
+      filterUT: '८ केंद्रशासित प्रदेश',
+    },
+
     worker: {
+      demoProfileBadge: 'डेमो कामगार प्रोफाइल',
+      demoBannerBody: 'येथे दाखवलेले तपशील आणि कौशल्य पासपोर्ट केवळ वापराच्या चाचणीसाठी नमुना आहेत. हे अधिकृत सरकारी प्रमाणपत्र किंवा परवाना नाही.',
+      demoBannerTitle: 'प्रोटोटाइप प्रात्यक्षिक मोड',
       nav: {
         dashboard: 'डॅशबोर्ड',
         profile: 'माझी प्रोफाइल',
@@ -1228,7 +1300,25 @@ export const translations = {
       authNotice: 'పూర్తి మొబైల్ ఓటీపీ మరియు వాయిస్ లాగిన్ తదుపరి దశల్లో అందుబాటులోకి వస్తుంది. కార్మికుల అనుభవాన్ని పరిశీలించడానికి కొనసాగండి.',
       close: 'మూసివేయి',
     },
+    theme: {
+      light: 'లైట్',
+      dark: 'డార్క్',
+      system: 'సిస్టమ్',
+    },
+    region: {
+      selectBtn: 'రాష్ట్రం / ప్రాంతం',
+      title: 'భారతీయ రాష్ట్రం లేదా కేంద్రపాలిత ప్రాంతాన్ని ఎంచుకోండి',
+      subtitle: 'భాష మరియు ప్రాంతం స్వతంత్ర ఎంపికలు. స్థానిక ప్రాజెక్టులు మరియు పనివారల నెట్‌వర్క్‌ను చూడండి.',
+      searchPlaceholder: 'రాష్ట్రం, నగరం లేదా ప్రాంతాన్ని వెతకండి (ఉదా: తెలంగాణ, ఆంధ్రప్రదేశ్, హైదరాబాద్)...',
+      filterAll: 'అన్ని ప్రాంతాలు',
+      filterStates: '28 రాష్ట్రాలు',
+      filterUT: '8 కేంద్రపాలిత ప్రాంతాలు',
+    },
+
     worker: {
+      demoProfileBadge: 'డెమో కార్మికుడి ప్రొఫైల్',
+      demoBannerBody: 'ఇక్కడ చూపిన కార్మికుల వివరాలు మరియు స్కిల్ పాస్‌పోర్ట్ పరీక్ష కోసం నమూనాలు మాత్రమే. ఇవి అధికారిక ప్రభుత్వ సర్టిఫికెట్ లేదా లైసెన్స్ కావు.',
+      demoBannerTitle: 'ప్రోటోటైప్ డెమో మోడ్',
       nav: {
         dashboard: 'డ్యాష్‌బోర్డ్',
         profile: 'నా ప్రొఫైల్',
@@ -1496,7 +1586,25 @@ export const translations = {
       authNotice: 'முழுமையான மொபைல் ஓடிபி மற்றும் குரல் உள்நுழைவு அடுத்த கட்டங்களில் வரும். இப்போது தொழிலாளர் பக்கத்தை சோதிக்க தொடரவும்.',
       close: 'மூடு',
     },
+    theme: {
+      light: 'வெளிச்சம்',
+      dark: 'இருண்ட',
+      system: 'கணினி',
+    },
+    region: {
+      selectBtn: 'மாநிலம் / பகுதி',
+      title: 'இந்திய மாநிலம் அல்லது யூனியன் பிரதேசத்தைத் தேர்ந்தெடுக்கவும்',
+      subtitle: 'மொழி மற்றும் பகுதி தனித்தனி விருப்பங்கள். உள்ளூர் திட்டங்கள் மற்றும் தொழிலாளர்களைப் பார்க்கவும்.',
+      searchPlaceholder: 'மாநிலம், நகரம் அல்லது பகுதியைத் தேடுங்கள் (எ.கா. தமிழ்நாடு, சென்னை, பெங்களூரு)...',
+      filterAll: 'அனைத்து பகுதிகள்',
+      filterStates: '28 மாநிலங்கள்',
+      filterUT: '8 யூனியன் பிரதேசங்கள்',
+    },
+
     worker: {
+      demoProfileBadge: 'மாதிரி தொழிலாளர் சுயவிவரம்',
+      demoBannerBody: 'இங்கு காட்டப்படும் தொழிலாளர் விவரங்கள் மற்றும் திறன் பாஸ்போர்ட் பயனர் சோதனைக்கான மாதிரிகள் மட்டுமே. இவை அதிகாரப்பூர்வ அரசு உரிமம் அல்ல.',
+      demoBannerTitle: 'மாதிரி விளக்க முறைமை',
       nav: {
         dashboard: 'டாஷ்போர்டு',
         profile: 'என் சுயவிவரம்',
@@ -1764,7 +1872,25 @@ export const translations = {
       authNotice: 'ಸಂಪೂರ್ಣ ಮೊಬೈಲ್ ಒಟಿಪಿ ಮತ್ತು ಧ್ವನಿ ಲಾಗಿನ್ ಮುಂದಿನ ಹಂತಗಳಲ್ಲಿ ಲಭ್ಯವಿರುತ್ತದೆ. ಈಗಲೇ ಕೆಲಸಗಾರರ ಅನುಭವವನ್ನು ಪರೀಕ್ಷಿಸಿ.',
       close: 'ಮುಚ್ಚಿ',
     },
+    theme: {
+      light: 'ಬೆಳಕು',
+      dark: 'ಕತ್ತಲೆ',
+      system: 'ಸಿಸ್ಟಮ್',
+    },
+    region: {
+      selectBtn: 'ರಾಜ್ಯ / ಪ್ರದೇಶ',
+      title: 'ಭಾರತೀಯ ರಾಜ್ಯ ಅಥವಾ ಕೇಂದ್ರಾಡಳಿತ ಪ್ರದೇಶ ಆಯ್ಕೆಮಾಡಿ',
+      subtitle: 'ಭಾಷೆ ಮತ್ತು ಪ್ರದೇಶ ಸ್ವತಂತ್ರ ಆಯ್ಕೆಗಳು. ಸ್ಥಳೀಯ ಯೋಜನೆಗಳು ಮತ್ತು ಕುಶಲಕರ್ಮಿಗಳನ್ನು ಅನ್ವೇಷಿಸಿ.',
+      searchPlaceholder: 'ರಾಜ್ಯ, ನಗರ ಅಥವಾ ಪ್ರದೇಶ ಹುಡುಕಿ (ಉದಾ: ಕರ್ನಾಟಕ, ಬೆಂಗಳೂರು, ಮುಂಬೈ)...',
+      filterAll: 'ಎಲ್ಲಾ ಪ್ರದೇಶಗಳು',
+      filterStates: '28 ರಾಜ್ಯಗಳು',
+      filterUT: '8 ಕೇಂದ್ರಾಡಳಿತ ಪ್ರದೇಶಗಳು',
+    },
+
     worker: {
+      demoProfileBadge: 'ಡೆಮೊ ಕೆಲಸಗಾರರ ಪ್ರೊಫೈಲ್',
+      demoBannerBody: 'ಇಲ್ಲಿ ತೋರಿಸಲಾದ ಕೆಲಸಗಾರರ ವಿವರಗಳು ಮತ್ತು ಸ್ಕಿಲ್ ಪಾಸ್‌ಪೋರ್ಟ್ ಬಳಕೆದಾರ ಪರೀಕ್ಷೆಗಾಗಿ ಮಾದರಿಗಳಾಗಿವೆ. ಇವು ಅಧಿಕೃತ ಸರ್ಕಾರಿ ಪ್ರಮಾಣಪತ್ರ ಅಥವಾ ಪರವಾನಗಿಗಳಲ್ಲ.',
+      demoBannerTitle: 'ಪ್ರೊಟೊಟೈಪ್ ಪ್ರದರ್ಶನ ಮೋಡ್',
       nav: {
         dashboard: 'ಡ್ಯಾಶ್‌ಬೋರ್ಡ್',
         profile: 'ನನ್ನ ಪ್ರೊಫೈಲ್',

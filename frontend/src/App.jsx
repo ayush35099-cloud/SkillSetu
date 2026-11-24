@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { RegionProvider } from './context/RegionContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import LanguageModal from './components/LanguageModal';
+import RegionModal from './components/RegionModal';
 import LoginModal from './components/LoginModal';
 import VoiceAssistantPill from './components/VoiceAssistantPill';
 import Home from './pages/Home';
@@ -57,9 +60,12 @@ function AppContent() {
   }, [checkHealth]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-ivory text-teal font-body selection:bg-terracotta/20 selection:text-terracotta-800">
+    <div className="min-h-screen flex flex-col bg-ivory dark:bg-charcoal-900 text-teal dark:text-ivory font-body selection:bg-terracotta/20 selection:text-terracotta-800 dark:selection:bg-amber-400/20 dark:selection:text-amber-200 transition-colors">
       {/* First-visit Language Selection Modal */}
       <LanguageModal />
+
+      {/* Searchable Indian Region / State Selection Modal */}
+      <RegionModal />
 
       {/* Role Selection / Login Modal */}
       <LoginModal 
@@ -116,8 +122,12 @@ function AppContent() {
 
 export default function App() {
   return (
-    <LanguageProvider>
-      <AppContent />
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <RegionProvider>
+          <AppContent />
+        </RegionProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }

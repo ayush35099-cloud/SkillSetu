@@ -22,7 +22,7 @@ export default function HowItWorks({ onOpenGetStarted }) {
       num: '03',
       icon: ShieldCheck,
       title: t('howItWorks.step3Title', 'Get your skills verified'),
-      desc: t('howItWorks.step3Desc', 'Receive a tamper-evident digital skill credential recognizing your practical competence.'),
+      desc: t('howItWorks.step3Desc', 'Receive an authentic digital skill credential recognizing your practical competence.'),
     },
     {
       num: '04',
@@ -33,21 +33,21 @@ export default function HowItWorks({ onOpenGetStarted }) {
   ];
 
   return (
-    <section id="how-it-works" className="py-16 sm:py-24 bg-ivory">
+    <section id="how-it-works" className="py-16 sm:py-24 bg-ivory dark:bg-charcoal-950 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-beige text-terracotta text-xs font-bold uppercase tracking-wider mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-charcoal-800 border border-beige dark:border-charcoal-700 text-terracotta dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-3">
             <span className="w-2 h-2 rounded-full bg-terracotta"></span>
             <span>{t('howItWorks.badge', 'Step-by-Step Verification')}</span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-teal tracking-tight font-heading">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-teal dark:text-ivory tracking-tight font-heading">
             {t('howItWorks.title', 'How It Works')}
           </h2>
 
-          <p className="mt-3 text-base sm:text-lg text-greygreen">
+          <p className="mt-3 text-base sm:text-lg text-greygreen dark:text-ivory/70">
             {t('howItWorks.subtitle', 'Four simple, respectful steps to verify your craft and grow your livelihood.')}
           </p>
         </div>
@@ -59,34 +59,33 @@ export default function HowItWorks({ onOpenGetStarted }) {
             return (
               <div
                 key={idx}
-                className="relative bg-white rounded-3xl p-6 sm:p-7 border border-beige shadow-xs hover:shadow-md hover:border-terracotta/40 transition-all flex flex-col justify-between group"
+                className="relative bg-white dark:bg-charcoal-800 rounded-3xl p-6 sm:p-7 border border-beige dark:border-charcoal-700 shadow-xs hover:shadow-md hover:border-terracotta/40 dark:hover:border-amber-400/40 transition-all flex flex-col justify-between group"
               >
                 <div>
                   {/* Top Bar: Step Number & Icon */}
                   <div className="flex items-center justify-between mb-5">
-                    <span className="text-3xl font-black text-beige group-hover:text-terracotta-200 transition-colors font-heading">
+                    <span className="text-3xl font-black text-beige dark:text-charcoal-600 group-hover:text-terracotta-200 dark:group-hover:text-amber-400/50 transition-colors font-heading">
                       {step.num}
                     </span>
-                    <div className="w-12 h-12 rounded-2xl bg-ivory border border-beige flex items-center justify-center text-teal group-hover:bg-teal group-hover:text-white transition-colors">
+                    <div className="w-12 h-12 rounded-2xl bg-ivory dark:bg-charcoal-700 border border-beige dark:border-charcoal-600 flex items-center justify-center text-teal dark:text-ivory group-hover:bg-teal dark:group-hover:bg-charcoal-600 group-hover:text-white transition-colors">
                       <Icon className="w-6 h-6" />
                     </div>
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-lg font-bold text-teal mb-2.5 font-heading">
+                  <h3 className="text-lg font-bold text-teal dark:text-ivory mb-2.5 font-heading">
                     {step.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-xs sm:text-sm text-greygreen leading-relaxed">
+                  <p className="text-xs sm:text-sm text-greygreen dark:text-ivory/70 leading-relaxed">
                     {step.desc}
                   </p>
                 </div>
 
-                {/* Bottom Step Indicator */}
-                <div className="mt-6 pt-4 border-t border-beige/60 text-[11px] font-bold text-terracotta flex items-center justify-between">
-                  <span>चरण {step.num} • Step {step.num}</span>
-                  <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
+                <div className="mt-6 pt-4 border-t border-beige/60 dark:border-charcoal-700 flex items-center gap-1.5 text-xs font-bold text-terracotta dark:text-amber-400">
+                  <span>Step {step.num}</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             );

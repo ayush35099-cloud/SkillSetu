@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import { useRegion } from '../context/RegionContext';
+import ThemeSwitcher from './ThemeSwitcher';
 import { 
   HardHat, 
   Globe, 
@@ -11,11 +13,12 @@ import {
   Briefcase, 
   User, 
   ArrowRight,
-  Sparkles
+  MapPin
 } from 'lucide-react';
 
 export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) {
   const { currentLanguageMeta, setShowLanguageModal, t } = useLanguage();
+  const { currentRegionMeta, setShowRegionModal } = useRegion();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -44,7 +47,7 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-ivory/95 backdrop-blur-md border-b border-beige">
+    <header className="sticky top-0 z-40 bg-ivory/95 dark:bg-charcoal-900/95 backdrop-blur-md border-b border-beige dark:border-charcoal-700 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-18 sm:h-20">
           
@@ -52,46 +55,46 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
           <Link 
             to="/" 
             onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-3 group"
+            className="flex items-center gap-3 group shrink-0"
           >
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-teal text-white flex items-center justify-center shadow-md shadow-teal/15 transition-transform group-hover:scale-105">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-teal dark:bg-charcoal-800 text-white flex items-center justify-center shadow-md shadow-teal/15 border border-teal-700 dark:border-charcoal-600 transition-transform group-hover:scale-105">
               <HardHat className="w-6 h-6 text-terracotta-200" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-xl sm:text-2xl font-black tracking-tight text-teal font-heading">
-                  Skill<span className="text-terracotta">Setu</span>
+                <span className="text-xl sm:text-2xl font-black tracking-tight text-teal dark:text-ivory font-heading">
+                  Skill<span className="text-terracotta dark:text-terracotta-400">Setu</span>
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-terracotta-50 text-terracotta-700 px-1.5 py-0.5 rounded border border-terracotta-200">
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-terracotta-50 dark:bg-terracotta/20 text-terracotta-700 dark:text-terracotta-300 px-1.5 py-0.5 rounded border border-terracotta-200 dark:border-terracotta-800">
                   कौशल सेतु
                 </span>
               </div>
-              <p className="text-[11px] text-greygreen font-medium hidden sm:block">
+              <p className="text-[11px] text-greygreen dark:text-ivory/60 font-medium hidden sm:block">
                 {t('nav.brandSub', 'Vocational Skill Verification')}
               </p>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-teal-700">
+          <nav className="hidden xl:flex items-center gap-5 text-sm font-semibold text-teal-700 dark:text-ivory/80">
             <a 
               href="#about" 
               onClick={(e) => handleNavAnchor(e, 'about')} 
-              className="hover:text-terracotta transition-colors"
+              className="hover:text-terracotta dark:hover:text-amber-300 transition-colors"
             >
               {t('nav.about', 'About')}
             </a>
             <a 
               href="#how-it-works" 
               onClick={(e) => handleNavAnchor(e, 'how-it-works')} 
-              className="hover:text-terracotta transition-colors"
+              className="hover:text-terracotta dark:hover:text-amber-300 transition-colors"
             >
               {t('nav.howItWorks', 'How It Works')}
             </a>
             <a 
               href="#professions" 
               onClick={(e) => handleNavAnchor(e, 'professions')} 
-              className="hover:text-terracotta transition-colors"
+              className="hover:text-terracotta dark:hover:text-amber-300 transition-colors"
             >
               {t('nav.professions', 'Professions')}
             </a>
@@ -101,8 +104,8 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
               to="/worker"
               className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
                 isWorkerPortal
-                  ? 'bg-teal text-white shadow-xs'
-                  : 'bg-beige/40 text-teal hover:bg-beige hover:text-terracotta'
+                  ? 'bg-teal dark:bg-charcoal-700 text-white shadow-xs'
+                  : 'bg-beige/40 dark:bg-charcoal-800 text-teal dark:text-ivory hover:bg-beige dark:hover:bg-charcoal-700 hover:text-terracotta'
               }`}
             >
               <Briefcase className="w-3.5 h-3.5" />
@@ -115,52 +118,66 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
             <a 
               href="#system-status" 
               onClick={(e) => handleNavAnchor(e, 'system-status')} 
-              className="hover:text-terracotta transition-colors"
+              className="hover:text-terracotta dark:hover:text-amber-300 transition-colors"
             >
               {t('nav.status', 'API Status')}
             </a>
           </nav>
 
-          {/* Controls: Language, API Pill, Login, CTA & Mobile Toggle */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Controls: Region, Language, Theme, API Pill, Login, CTA */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
             
+            {/* Region Selector Button (Searchable Indian States/UTs) */}
+            <button
+              type="button"
+              onClick={() => setShowRegionModal(true)}
+              title={`Selected Region: ${currentRegionMeta.name} (Click to change)`}
+              className="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white dark:bg-charcoal-800 hover:bg-beige/40 dark:hover:bg-charcoal-700 text-teal dark:text-ivory text-xs font-bold border border-beige dark:border-charcoal-700 shadow-xs transition-all max-w-[150px] truncate"
+            >
+              <MapPin className="w-3.5 h-3.5 text-terracotta dark:text-amber-400 shrink-0" />
+              <span className="truncate">{currentRegionMeta.name.split(' ')[0]}</span>
+            </button>
+
             {/* Language Switcher Button */}
             <button
               type="button"
               onClick={() => setShowLanguageModal(true)}
               title={t('nav.changeLang', 'Change Language')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-beige/40 text-teal text-xs font-bold border border-beige shadow-xs transition-all"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white dark:bg-charcoal-800 hover:bg-beige/40 dark:hover:bg-charcoal-700 text-teal dark:text-ivory text-xs font-bold border border-beige dark:border-charcoal-700 shadow-xs transition-all"
             >
-              <Globe className="w-3.5 h-3.5 text-terracotta" />
+              <Globe className="w-3.5 h-3.5 text-terracotta shrink-0" />
               <span className="font-heading">{currentLanguageMeta.nativeName}</span>
             </button>
+
+            {/* Accessible Theme Switcher (Light / Dark / System) */}
+            <ThemeSwitcher compact={true} />
 
             {/* Backend Status Indicator Pill */}
             <div 
               onClick={onRefreshStatus}
               title="Click to check backend status"
-              className={`cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+              className={`cursor-pointer inline-flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                 backendStatus === 'connected'
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100'
                   : backendStatus === 'checking'
-                  ? 'bg-amber-50 text-amber-800 border-amber-300'
-                  : 'bg-rose-50 text-rose-800 border-rose-300 hover:bg-rose-100'
+                  ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700'
+                  : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-700 hover:bg-rose-100'
               }`}
             >
               {backendStatus === 'connected' ? (
                 <>
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span className="hidden xl:inline text-[11px]">API Live</span>
+                  <span className="hidden lg:inline text-[11px]">API Live</span>
                 </>
               ) : backendStatus === 'checking' ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600" />
-                  <span className="hidden xl:inline text-[11px]">Checking</span>
+                  <span className="hidden lg:inline text-[11px]">Checking</span>
                 </>
               ) : (
                 <>
                   <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
-                  <span className="hidden xl:inline text-[11px]">Offline</span>
+                  <span className="hidden lg:inline text-[11px]">Offline</span>
                 </>
               )}
             </div>
@@ -169,7 +186,7 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
             <button
               type="button"
               onClick={onOpenLogin}
-              className="hidden sm:inline-flex items-center text-xs font-bold text-teal hover:text-terracotta px-2.5 py-1.5 rounded-xl hover:bg-beige/30 transition-colors"
+              className="hidden sm:inline-flex items-center text-xs font-bold text-teal dark:text-ivory hover:text-terracotta dark:hover:text-amber-300 px-2 py-1.5 rounded-xl hover:bg-beige/30 dark:hover:bg-charcoal-700 transition-colors"
             >
               {t('nav.login', 'Login')}
             </button>
@@ -178,7 +195,7 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
             <button
               type="button"
               onClick={handleGetStarted}
-              className="hidden sm:inline-flex items-center justify-center px-4 py-2 rounded-xl bg-terracotta hover:bg-terracotta-600 text-white font-bold text-xs sm:text-sm shadow-sm shadow-terracotta/25 transition-all transform active:scale-95"
+              className="hidden sm:inline-flex items-center justify-center px-3.5 py-2 rounded-xl bg-terracotta hover:bg-terracotta-600 text-white font-bold text-xs sm:text-sm shadow-sm shadow-terracotta/25 transition-all transform active:scale-95"
             >
               {t('nav.getStarted', 'Get Started')}
             </button>
@@ -187,14 +204,14 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-xl text-teal hover:bg-beige/40 border border-beige transition-colors"
+              className="xl:hidden p-2 rounded-xl text-teal dark:text-ivory hover:bg-beige/40 dark:hover:bg-charcoal-800 border border-beige dark:border-charcoal-700 transition-colors"
               aria-label={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
               aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? (
-                <X className="w-5 h-5 text-teal" />
+                <X className="w-5 h-5" />
               ) : (
-                <Menu className="w-5 h-5 text-teal" />
+                <Menu className="w-5 h-5" />
               )}
             </button>
 
@@ -205,26 +222,26 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
 
       {/* Mobile Drawer / Slide-down Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-ivory border-b border-beige px-4 pt-3 pb-6 space-y-3 shadow-lg animate-fadeIn">
+        <div className="xl:hidden bg-ivory dark:bg-charcoal-900 border-b border-beige dark:border-charcoal-700 px-4 pt-3 pb-6 space-y-3 shadow-lg animate-fadeIn">
           <div className="flex flex-col space-y-1">
             <a
               href="#about"
               onClick={(e) => handleNavAnchor(e, 'about')}
-              className="px-3 py-2.5 rounded-xl text-sm font-semibold text-teal hover:bg-beige/40 transition-colors flex items-center justify-between"
+              className="px-3 py-2.5 rounded-xl text-sm font-semibold text-teal dark:text-ivory hover:bg-beige/40 dark:hover:bg-charcoal-800 transition-colors flex items-center justify-between"
             >
               <span>{t('nav.about', 'About')}</span>
             </a>
             <a
               href="#how-it-works"
               onClick={(e) => handleNavAnchor(e, 'how-it-works')}
-              className="px-3 py-2.5 rounded-xl text-sm font-semibold text-teal hover:bg-beige/40 transition-colors flex items-center justify-between"
+              className="px-3 py-2.5 rounded-xl text-sm font-semibold text-teal dark:text-ivory hover:bg-beige/40 dark:hover:bg-charcoal-800 transition-colors flex items-center justify-between"
             >
               <span>{t('nav.howItWorks', 'How It Works')}</span>
             </a>
             <a
               href="#professions"
               onClick={(e) => handleNavAnchor(e, 'professions')}
-              className="px-3 py-2.5 rounded-xl text-sm font-semibold text-teal hover:bg-beige/40 transition-colors flex items-center justify-between"
+              className="px-3 py-2.5 rounded-xl text-sm font-semibold text-teal dark:text-ivory hover:bg-beige/40 dark:hover:bg-charcoal-800 transition-colors flex items-center justify-between"
             >
               <span>{t('nav.professions', 'Professions')}</span>
             </a>
@@ -232,7 +249,9 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
               to="/worker"
               onClick={() => setMobileMenuOpen(false)}
               className={`px-3 py-2.5 rounded-xl text-sm font-bold flex items-center justify-between transition-colors ${
-                isWorkerPortal ? 'bg-teal text-white' : 'text-teal hover:bg-beige/40'
+                isWorkerPortal 
+                  ? 'bg-teal dark:bg-charcoal-700 text-white' 
+                  : 'text-teal dark:text-ivory hover:bg-beige/40 dark:hover:bg-charcoal-800'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -246,22 +265,39 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
             <a
               href="#system-status"
               onClick={(e) => handleNavAnchor(e, 'system-status')}
-              className="px-3 py-2.5 rounded-xl text-sm font-semibold text-teal hover:bg-beige/40 transition-colors flex items-center justify-between"
+              className="px-3 py-2.5 rounded-xl text-sm font-semibold text-teal dark:text-ivory hover:bg-beige/40 dark:hover:bg-charcoal-800 transition-colors flex items-center justify-between"
             >
               <span>{t('nav.status', 'API Status')}</span>
             </a>
           </div>
 
-          <div className="pt-3 border-t border-beige flex flex-col gap-2">
+          {/* Mobile Region & Theme Quick Bar */}
+          <div className="pt-3 border-t border-beige dark:border-charcoal-700 flex flex-wrap items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setShowRegionModal(true);
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-charcoal-800 border border-beige dark:border-charcoal-700 text-xs font-bold text-teal dark:text-ivory"
+            >
+              <MapPin className="w-3.5 h-3.5 text-terracotta" />
+              <span>Region: {currentRegionMeta.name.split(' ')[0]}</span>
+            </button>
+
+            <ThemeSwitcher />
+          </div>
+
+          <div className="pt-2 flex flex-col gap-2">
             <button
               type="button"
               onClick={() => {
                 setMobileMenuOpen(false);
                 onOpenLogin();
               }}
-              className="w-full py-2.5 px-4 rounded-xl text-sm font-bold text-teal bg-white border border-beige hover:bg-beige/30 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2.5 px-4 rounded-xl text-sm font-bold text-teal dark:text-ivory bg-white dark:bg-charcoal-800 border border-beige dark:border-charcoal-700 hover:bg-beige/30 transition-colors flex items-center justify-center gap-2"
             >
-              <User className="w-4 h-4 text-teal" />
+              <User className="w-4 h-4 text-teal dark:text-ivory" />
               <span>{t('nav.login', 'Login')}</span>
             </button>
 
