@@ -55,18 +55,18 @@
     - Decoupled architecture: Region and Language are stored independently in `localStorage` without assuming one from the other.
   - **Multilingual Support (7 Indian Languages)**:
     - English, Hindi (हिन्दी), Kannada (ಕನ್ನಡ), Bengali (বাংলা), Marathi (मराठी), Telugu (తెలుగు), Tamil (தமிழ்).
-  - **Authentic Indian Photography Registry**:
-    - 100% verified Indian documentary photography depicting real Indian artisans and sites. Zero AI-generated synthetic faces.
-    - Curated photobank covering Electrician, Plumber, Mason, Carpenter, Welder, Painter, Mechanic, and Women in Trades.
+  - **Authentic Trade Photography Registry**:
+    - 100% verified documentary photography depicting real craftspeople with real tools. Zero AI-generated synthetic faces.
+    - Curated registry covering Electrician, Plumber (real pipe fittings, no taps), Mason (craftsman with hammer), Carpenter (timber and power driver, no towels/vases), Welder, Painter, Mechanic, and Women in Trades.
     - Full provenance documented in `PHOTO_SOURCES.md`.
   - **Worker Experience Portal (`/worker/*`)**:
-    - Responsive layout with desktop sidebar and mobile sticky navigation.
+    - Responsive layout with desktop header, quick action cards, and mobile navigation.
     - Dynamic profile completion calculation based on completed profile fields (replacing hardcoded stats).
     - Interactive Worker Profile with trade competencies, experience, and local storage persistence.
     - Digital Skill Passport prototype with explicit demo disclaimers and non-functional QR code labels.
-    - Practical Assessment submission simulator and Job discovery board.
+    - Practical Assessment benchmark viewer with transparent Phase 3 prototype modal notices.
   - **Role-Based Gating**:
-    - Transparent modal informing users that Contractor and Assessor portals are scheduled for Phases 3 and 4.
+    - Transparent modal informing users that Contractor, Assessor, and Admin portals are scheduled for future development phases.
 
 ---
 

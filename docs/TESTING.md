@@ -133,6 +133,9 @@ Content-Type: application/json
   - *Verify*: Displays informational notice: *"Contractor Portal: Scheduled for Phase 4"*.
   - Select "Assessor".
   - *Verify*: Displays informational notice: *"Assessor Portal: Scheduled for Phase 3"*.
+  - Select "Admin".
+  - *Verify*: Displays informational notice: *"Admin Portal: Scheduled for Future Phase"*.
+  - *Verify*: Clicking Continue for Contractor/Assessor/Admin does NOT route into the Worker Portal. Only "Worker" routes to `/worker`.
 
 ---
 

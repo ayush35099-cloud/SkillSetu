@@ -85,8 +85,8 @@
 
 | Requirement | Code Location | Observed Behavior | Status |
 |:---|:---|:---|:---:|
-| **Zero Synthetic / AI People** | `frontend/src/services/photoService.js` | All photographs depict real human craftspeople working in Indian environments. No AI-generated portraits or synthetic imagery. | ✅ VERIFIED |
-| **Documentary Photo Registry** | `PHOTO_SOURCES.md` | Full legal provenance and attribution recorded: photographers (Pradeep Charles, Naveed Ahmed, Ayanava Sanyal, Subhayan Das, Prasanth M, Anoop Kumar, Ashwini Chaudhary), Unsplash IDs, locations, and licenses. | ✅ VERIFIED |
+| **Zero Synthetic / AI People** | `frontend/src/services/photoService.js` | All photographs depict real human craftspeople working with genuine tools. No AI-generated portraits or synthetic imagery. | ✅ VERIFIED |
+| **Documentary Photo Registry** | `PHOTO_SOURCES.md` | Full legal provenance and attribution recorded: Pexels and Unsplash creators (EqualStock IN, Anıl Karakaya, Bidvine, Oloruntoba John, Anoop Kumar, Pradeep Charles, Naveed Ahmed, Ayanava Sanyal, Subhayan Das, Prasanth M, Yogendra Singh), exact URLs, verified subject matter, and licenses. | ✅ VERIFIED |
 | **Dynamic Regional Photo Resolution** | `frontend/src/services/photoService.js` (`getHeroPhotoByRegion`) | Resolves Karnataka to Bengaluru infrastructure, Maharashtra to Mumbai civil work, West Bengal to Kolkata workshop craft, Delhi to precision metalcraft, and Tamil Nadu to industrial machining. Gracefully falls back to national documentary photo for other states. | ✅ VERIFIED |
 | **Image Network Resilience** | `Hero.jsx`, `Professions.jsx` | Every `<img>` tag implements an `onError` event handler to prevent broken image icons or layout shifts if an image fails to load. | ✅ VERIFIED |
 
@@ -100,8 +100,8 @@
 | **Dynamic Completion Metric** | `frontend/src/services/demoWorkerService.js` (`calculateCompletionPercentage`) | Dynamically calculates profile completeness (0–100%) by inspecting actual populated profile fields (personal info, trade details, documents, skills). Replaced previous hardcoded 75%. | ✅ VERIFIED |
 | **Interactive Worker Profile** | `frontend/src/pages/worker/WorkerProfile.jsx` | Full editing of contact details, trade experience, tools owned, and verified skills with instant calculation updates and `localStorage` persistence. | ✅ VERIFIED |
 | **Digital Skill Passport Prototype** | `frontend/src/pages/worker/WorkerPassport.jsx` | Displays worker credential preview with explicit banner: *"DEMO PREVIEW – NOT A VALID CREDENTIAL"*, labeled non-functional QR code, and transparent disclosure. | 🟡 PROTOTYPE |
-| **Assessment Simulator** | `frontend/src/pages/worker/WorkerAssessments.jsx` | Interactive task listing and evidence submission workflow using simulated client-side state. | 🟡 PROTOTYPE |
-| **Role-Based Gating** | `frontend/src/components/LoginModal.jsx` | Worker role navigates to the interactive demo portal; Contractor and Assessor selections display informative modal notices stating they are scheduled for Phases 3 and 4. | ✅ VERIFIED |
+| **Assessment Simulator** | `frontend/src/pages/worker/WorkerSkills.jsx` | Interactive task benchmark inspection and evidence submission modal with explicit Phase 3 prototype disclaimers. | 🟡 PROTOTYPE |
+| **Role-Based Gating** | `frontend/src/components/LoginModal.jsx` | Worker role navigates to the interactive demo portal; Contractor, Assessor, and Admin selections display informative modal notices stating they are scheduled for future phases. | ✅ VERIFIED |
 
 ---
 

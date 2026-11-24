@@ -10,6 +10,7 @@ import {
   UserCheck, 
   Sparkles,
   ClipboardCheck,
+  ShieldAlert,
   Clock,
   Info
 } from 'lucide-react';
@@ -17,7 +18,7 @@ import {
 export default function LoginModal({ isOpen, onClose }) {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState('worker'); // 'worker' | 'contractor' | 'assessor'
+  const [selectedRole, setSelectedRole] = useState('worker'); // 'worker' | 'contractor' | 'assessor' | 'admin'
   const [showRoleNotice, setShowRoleNotice] = useState(false);
 
   if (!isOpen) return null;
@@ -33,6 +34,32 @@ export default function LoginModal({ isOpen, onClose }) {
       navigate('/worker');
     } else {
       setShowRoleNotice(true);
+    }
+  };
+
+  const getRoleNoticeTitle = () => {
+    switch (selectedRole) {
+      case 'contractor':
+        return 'Contractor Portal: Scheduled for Phase 4';
+      case 'assessor':
+        return 'Assessor Portal: Scheduled for Phase 3';
+      case 'admin':
+        return 'Admin Portal: Scheduled for Future Phase';
+      default:
+        return '';
+    }
+  };
+
+  const getRoleNoticeBody = () => {
+    switch (selectedRole) {
+      case 'contractor':
+        return 'Contractor onboarding and instant digital skill passport verification will activate in Phase 4. For now, please test the platform using the Worker Demo Portal.';
+      case 'assessor':
+        return 'Standardized assessment rubrics and practical video grading tools will activate in Phase 3. Please explore the Worker Portal.';
+      case 'admin':
+        return 'Administrative management, institutional verification, and municipal workforce governance tools are scheduled for future development phases. Please use the Worker Demo Portal.';
+      default:
+        return '';
     }
   };
 
@@ -86,7 +113,7 @@ export default function LoginModal({ isOpen, onClose }) {
             {/* 1. Worker Role Option */}
             <div
               onClick={() => handleRoleSelect('worker')}
-              className={`cursor-pointer p-4 rounded-2xl border-2 transition-all flex items-start gap-3.5 ${
+              className={`cursor-pointer p-3.5 sm:p-4 rounded-2xl border-2 transition-all flex items-start gap-3.5 ${
                 selectedRole === 'worker'
                   ? 'border-terracotta bg-terracotta-50/70 dark:bg-terracotta/20 shadow-sm'
                   : 'border-beige dark:border-charcoal-700 hover:border-teal/30 dark:hover:border-charcoal-500 bg-white dark:bg-charcoal-800/80'
@@ -113,7 +140,7 @@ export default function LoginModal({ isOpen, onClose }) {
             {/* 2. Contractor Role Option */}
             <div
               onClick={() => handleRoleSelect('contractor')}
-              className={`cursor-pointer p-4 rounded-2xl border-2 transition-all flex items-start gap-3.5 ${
+              className={`cursor-pointer p-3.5 sm:p-4 rounded-2xl border-2 transition-all flex items-start gap-3.5 ${
                 selectedRole === 'contractor'
                   ? 'border-terracotta bg-terracotta-50/70 dark:bg-terracotta/20 shadow-sm'
                   : 'border-beige dark:border-charcoal-700 hover:border-teal/30 dark:hover:border-charcoal-500 bg-white dark:bg-charcoal-800/80'
@@ -128,7 +155,7 @@ export default function LoginModal({ isOpen, onClose }) {
                     {t('loginModal.contractorOption', 'I am a Contractor / Builder')}
                   </h3>
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sand-200 dark:bg-charcoal-700 text-greygreen dark:text-ivory/60">
-                    Future Phase
+                    Phase 4
                   </span>
                 </div>
                 <p className="text-xs text-greygreen dark:text-ivory/60 mt-0.5 leading-relaxed">
@@ -140,7 +167,7 @@ export default function LoginModal({ isOpen, onClose }) {
             {/* 3. Assessor Role Option */}
             <div
               onClick={() => handleRoleSelect('assessor')}
-              className={`cursor-pointer p-4 rounded-2xl border-2 transition-all flex items-start gap-3.5 ${
+              className={`cursor-pointer p-3.5 sm:p-4 rounded-2xl border-2 transition-all flex items-start gap-3.5 ${
                 selectedRole === 'assessor'
                   ? 'border-terracotta bg-terracotta-50/70 dark:bg-terracotta/20 shadow-sm'
                   : 'border-beige dark:border-charcoal-700 hover:border-teal/30 dark:hover:border-charcoal-500 bg-white dark:bg-charcoal-800/80'
@@ -155,7 +182,7 @@ export default function LoginModal({ isOpen, onClose }) {
                     {t('loginModal.assessorOption', 'I am a Vocational Assessor')}
                   </h3>
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sand-200 dark:bg-charcoal-700 text-greygreen dark:text-ivory/60">
-                    Future Phase
+                    Phase 3
                   </span>
                 </div>
                 <p className="text-xs text-greygreen dark:text-ivory/60 mt-0.5 leading-relaxed">
@@ -163,20 +190,45 @@ export default function LoginModal({ isOpen, onClose }) {
                 </p>
               </div>
             </div>
+
+            {/* 4. Admin Role Option */}
+            <div
+              onClick={() => handleRoleSelect('admin')}
+              className={`cursor-pointer p-3.5 sm:p-4 rounded-2xl border-2 transition-all flex items-start gap-3.5 ${
+                selectedRole === 'admin'
+                  ? 'border-terracotta bg-terracotta-50/70 dark:bg-terracotta/20 shadow-sm'
+                  : 'border-beige dark:border-charcoal-700 hover:border-teal/30 dark:hover:border-charcoal-500 bg-white dark:bg-charcoal-800/80'
+              }`}
+            >
+              <div className={`p-2.5 rounded-xl ${selectedRole === 'admin' ? 'bg-terracotta text-white' : 'bg-sand-100 dark:bg-charcoal-700 text-teal dark:text-ivory'}`}>
+                <ShieldAlert className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-teal dark:text-ivory font-heading">
+                    {t('loginModal.adminOption', 'Platform Administrator')}
+                  </h3>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sand-200 dark:bg-charcoal-700 text-greygreen dark:text-ivory/60">
+                    Future Phase
+                  </span>
+                </div>
+                <p className="text-xs text-greygreen dark:text-ivory/60 mt-0.5 leading-relaxed">
+                  Institutional governance, credential revocation, and municipal workforce compliance.
+                </p>
+              </div>
+            </div>
           </div>
 
-          {/* Role Status Notice for Contractor / Assessor */}
+          {/* Role Status Notice for Contractor / Assessor / Admin */}
           {selectedRole !== 'worker' && (
             <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5 mb-5 animate-fadeIn">
               <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               <div className="leading-relaxed">
                 <strong className="block font-bold">
-                  {selectedRole === 'contractor' ? 'Contractor Portal: Scheduled for Phase 4' : 'Assessor Portal: Scheduled for Phase 3'}
+                  {getRoleNoticeTitle()}
                 </strong>
                 <p className="mt-0.5">
-                  {selectedRole === 'contractor' 
-                    ? 'Contractor onboarding and instant digital skill passport verification will activate in Phase 4. For now, please test the platform using the Worker Demo Portal.'
-                    : 'Standardized assessment rubrics and practical video grading tools will activate in Phase 3. Please explore the Worker Portal.'}
+                  {getRoleNoticeBody()}
                 </p>
               </div>
             </div>

@@ -120,14 +120,14 @@ We are committed to absolute transparency regarding what is implemented, what is
 | **Theme Engine (Light, Dark, System)** | 2 | ✅ Implemented | `ThemeContext.jsx`, zero FOUC script in `index.html`, Tailwind tokens |
 | **Multilingual Engine (7 Languages)** | 2 | ✅ Implemented | English, Hindi, Kannada, Bengali, Marathi, Telugu, Tamil (`src/i18n/translations.js`) |
 | **Regional Personalisation (36 States/UTs)** | 2 | ✅ Implemented | Decoupled state engine in `src/data/regions.js` & `RegionContext.jsx` |
-| **Authentic Indian Photo Registry** | 2 | ✅ Implemented | Curated Indian documentary photography with zero AI faces (`PHOTO_SOURCES.md`) |
+| **Authentic Trade Photo Registry** | 2 | ✅ Implemented | Curated Pexels & Unsplash documentary trade photography with zero AI faces (`PHOTO_SOURCES.md`) |
 | **Worker Experience Portal** | 2 | ✅ Implemented | Responsive sidebar/topbar layout, quick stats (`src/pages/worker/WorkerLayout.jsx`) |
 | **Dynamic Profile Completion Metric** | 2 | ✅ Implemented | Dynamic calculation based on completed profile fields (`demoWorkerService.js`) |
 | **Worker Profile Management** | 2 | ✅ Implemented | Interactive editing with local state persistence (`src/pages/worker/WorkerProfile.jsx`) |
 | **Digital Skill Passport** | 2 | 🟡 Prototype (Demo State) | Visual credential layout with explicit demo disclaimers & non-functional QR code |
 | **Practical Assessment Simulator** | 2 | 🟡 Prototype (Demo State) | Task submission UI with simulated upload & client-side status tracking |
 | **Job Opportunities Board** | 2 | 🟡 Prototype (Demo State) | Filterable trade opportunity listings with instant application simulator |
-| **Contractor & Assessor Portals** | 3–4 | ⏳ Planned | Clean informational coming-soon modal notices in `LoginModal.jsx` |
+| **Contractor, Assessor & Admin Portals** | 3–4 | ⏳ Planned | Clean informational coming-soon modal notices in `LoginModal.jsx` |
 | **Live AI Video Evaluation (Gemini)** | 6 | ⏳ Planned | Computer vision analysis of uploaded trade technique videos |
 | **Bidirectional Voice AI (Gemini Live)** | 5 | ⏳ Planned | Real-time speech-to-speech conversational assistant for unlettered workers |
 
