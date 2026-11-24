@@ -85,50 +85,50 @@ Content-Type: application/json
 ## 📱 3. Manual Functional QA Checklist
 
 ### A. Theming Engine (Light, Dark, System)
-- [ ] **Switch to Dark Mode**: Click theme icon in Navbar -> select "Dark".
+- [x] **Switch to Dark Mode**: Click theme icon in Navbar -> select "Dark".
   - *Verify*: Canvas turns to Charcoal (`#0E1D20`), cards adopt deep cyan surfaces, text changes to warm ivory (`#F6F3EB`), terracotta accents remain vibrant.
-- [ ] **Switch to Light Mode**: Select "Light".
+- [x] **Switch to Light Mode**: Select "Light".
   - *Verify*: Background changes to warm ivory (`#F6F3EB`), cards change to white/soft sand, text changes to deep slate.
-- [ ] **Switch to System Mode**: Select "System".
+- [x] **Switch to System Mode**: Select "System".
   - *Verify*: App immediately mirrors OS/browser color scheme (`prefers-color-scheme`).
-- [ ] **Anti-FOUC Hard Reload**: In Dark Mode, perform a hard reload (`Ctrl+F5` or `Cmd+Shift+R`).
+- [x] **Anti-FOUC Hard Reload**: In Dark Mode, perform a hard reload (`Ctrl+F5` or `Cmd+Shift+R`).
   - *Verify*: No white flash appears before dark styling applies.
 
 ### B. Regional Personalisation (36 States & UTs)
-- [ ] **Open Region Modal**: Click the regional badge in the Navbar.
+- [x] **Open Region Modal**: Click the regional badge in the Navbar.
   - *Verify*: Modal opens with live search bar, category filter pills ("All", "States", "Union Territories"), and current state selected.
-- [ ] **Search by State Name**: Type `Karna` in the search box.
+- [x] **Search by State Name**: Type `Karna` in the search box.
   - *Verify*: List instantly filters to "Karnataka (ಕರ್ನಾಟಕ)".
-- [ ] **Select State**: Click "Karnataka".
+- [x] **Select State**: Click "Karnataka".
   - *Verify*: Modal closes, Navbar badge updates to "Karnataka", Hero background photo dynamically updates to Bengaluru infrastructure documentary photograph.
-- [ ] **Select Union Territory**: Reopen modal, filter by "Union Territories", select "Delhi (दिल्ली)".
+- [x] **Select Union Territory**: Reopen modal, filter by "Union Territories", select "Delhi (दिल्ली)".
   - *Verify*: Hero photo updates to authentic Delhi workshop photograph.
-- [ ] **Select Non-Hub State**: Select "Assam" or "Goa".
+- [x] **Select Non-Hub State**: Select "Assam" or "Goa".
   - *Verify*: Gracefully falls back to national infrastructure documentary photo without breaking layout.
 
 ### C. Multilingual Support (7 Indian Languages)
-- [ ] **Open Language Modal**: Click the language globe button in the Navbar.
+- [x] **Open Language Modal**: Click the language globe button in the Navbar.
   - *Verify*: Modal displays all 7 languages in native scripts:
     - English, हिन्दी (Hindi), ಕನ್ನಡ (Kannada), বাংলা (Bengali), मराठी (Marathi), తెలుగు (Telugu), தமிழ் (Tamil).
-- [ ] **Switch Language to Hindi**: Click "हिन्दी".
+- [x] **Switch Language to Hindi**: Click "हिन्दी".
   - *Verify*: Navbar, Hero headlines, CTAs, and feature cards translate instantly to Hindi.
-- [ ] **Verify Language & Region Decoupling**:
+- [x] **Verify Language & Region Decoupling**:
   - Set Region to **Tamil Nadu**, then set Language to **हिन्दी**.
   - *Verify*: Region badge remains "Tamil Nadu" and language remains "हिन्दी". Neither overrides the other.
 
 ### D. Worker Experience Portal (`/worker/*`)
-- [ ] **Access Worker Portal**: Click "Worker Demo" in Navbar or login as "Worker" in LoginModal.
+- [x] **Access Worker Portal**: Click "Worker Demo" in Navbar or login as "Worker" in LoginModal.
   - *Verify*: Routes cleanly to `/SkillSetu/worker` displaying the Worker Dashboard.
-- [ ] **Inspect Prototype Banner**:
+- [x] **Inspect Prototype Banner**:
   - *Verify*: Prominent warning banner appears: *"PROTOTYPE DEMONSTRATION MODE: Worker data, skills, and passport credentials shown here are interactive sample previews..."*
-- [ ] **Dynamic Profile Completion**:
+- [x] **Dynamic Profile Completion**:
   - Navigate to `/worker/profile`.
   - Notice the completion percentage. Remove an optional field (e.g., secondary phone number) and save.
   - *Verify*: Completion percentage dynamically recalculates based on actual field population.
-- [ ] **Skill Passport Transparency**:
+- [x] **Skill Passport Transparency**:
   - Navigate to `/worker/passport`.
   - *Verify*: Watermark reads *"DEMO PREVIEW – NOT A VALID CREDENTIAL"*, and the QR code is clearly labeled *"Visual Placeholder (Non-functional)"*.
-- [ ] **Role Gating in LoginModal**:
+- [x] **Role Gating in LoginModal**:
   - Click "Login" in Navbar -> select "Contractor".
   - *Verify*: Displays informational notice: *"Contractor Portal: Scheduled for Phase 4"*.
   - Select "Assessor".
@@ -136,6 +136,15 @@ Content-Type: application/json
   - Select "Admin".
   - *Verify*: Displays informational notice: *"Admin Portal: Scheduled for Future Phase"*.
   - *Verify*: Clicking Continue for Contractor/Assessor/Admin does NOT route into the Worker Portal. Only "Worker" routes to `/worker`.
+
+### E. High-Resolution Authentic Photography & Assets
+- [x] **About Section Textile Artisan Photo**:
+  - *Verify*: Displays crisp 2048 × 1365 photograph of skilled Indian female artisan operating an industrial sewing machine without pixelation or stretching.
+  - *Verify*: Browser loads WebP source (`images/textile-worker.webp`) with JPG fallback (`images/textile-worker.jpg`).
+  - *Verify*: Responsive `object-fit: cover` and `object-center` prevents distortion across mobile and desktop.
+  - *Verify*: Attribution badge displays `EqualStock IN / Pexels (2048×1365)`.
+- [x] **8 Core Vocational Trade Cards**:
+  - *Verify*: All 8 cards (Electrician, Plumber, Mason, Carpenter, Welder, Painter, Mechanic, Other Trades) display authentic trade imagery with zero AI faces and zero stock clichés.
 
 ---
 

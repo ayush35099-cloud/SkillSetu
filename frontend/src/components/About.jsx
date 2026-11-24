@@ -15,18 +15,28 @@ export default function About() {
           <div className="lg:col-span-5 order-2 lg:order-1">
             <div className="relative rounded-3xl overflow-hidden border border-beige dark:border-charcoal-700 shadow-md bg-ivory dark:bg-charcoal-800">
               <div className="relative h-80 sm:h-96">
-                <img
-                  src="https://images.pexels.com/photos/31199578/pexels-photo-31199578.jpeg"
-                  alt="Skilled Indian female artisan smiling while operating an industrial sewing machine in a textile workshop"
-                  className="w-full h-full object-cover object-center"
-                  loading="lazy"
-                  onError={(e) => {
-                    e.currentTarget.src = "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80";
-                  }}
-                />
+                <picture className="w-full h-full block">
+                  <source
+                    srcSet={`${import.meta.env.BASE_URL}images/textile-worker.webp`}
+                    type="image/webp"
+                  />
+                  <source
+                    srcSet={`${import.meta.env.BASE_URL}images/textile-worker.jpg`}
+                    type="image/jpeg"
+                  />
+                  <img
+                    src={`${import.meta.env.BASE_URL}images/textile-worker.jpg`}
+                    alt="Skilled Indian female artisan smiling while operating an industrial sewing machine in a textile workshop"
+                    className="w-full h-full object-cover object-center"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.pexels.com/photos/31199578/pexels-photo-31199578.jpeg?auto=compress&cs=tinysrgb&w=2048";
+                    }}
+                  />
+                </picture>
                 <span className="absolute bottom-2 left-3 inline-flex items-center gap-1 text-[9px] text-ivory bg-teal-950/70 backdrop-blur-xs px-2 py-0.5 rounded">
                   <Camera className="w-2.5 h-2.5" />
-                  <span>EqualStock IN / Pexels</span>
+                  <span>EqualStock IN / Pexels (2048×1365)</span>
                 </span>
               </div>
               <div className="p-5 bg-ivory dark:bg-charcoal-800 border-t border-beige dark:border-charcoal-700">

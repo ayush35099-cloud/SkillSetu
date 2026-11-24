@@ -87,6 +87,7 @@
 |:---|:---|:---|:---:|
 | **Zero Synthetic / AI People** | `frontend/src/services/photoService.js` | All photographs depict real human craftspeople working with genuine tools. No AI-generated portraits or synthetic imagery. | ✅ VERIFIED |
 | **Documentary Photo Registry** | `PHOTO_SOURCES.md` | Full legal provenance and attribution recorded: Pexels and Unsplash creators (EqualStock IN, Anıl Karakaya, Bidvine, Oloruntoba John, Anoop Kumar, Pradeep Charles, Naveed Ahmed, Ayanava Sanyal, Subhayan Das, Prasanth M, Yogendra Singh), exact URLs, verified subject matter, and licenses. | ✅ VERIFIED |
+| **High-Resolution Local Assets** | `About.jsx`, `frontend/public/images/` | Pristine 2048 × 1365 original (`textile-worker-original.jpg`), enhanced WebP (`textile-worker.webp`), and JPEG (`textile-worker.jpg`) served via `<picture>` with responsive `object-fit: cover` and remote CDN fallback. | ✅ VERIFIED |
 | **Dynamic Regional Photo Resolution** | `frontend/src/services/photoService.js` (`getHeroPhotoByRegion`) | Resolves Karnataka to Bengaluru infrastructure, Maharashtra to Mumbai civil work, West Bengal to Kolkata workshop craft, Delhi to precision metalcraft, and Tamil Nadu to industrial machining. Gracefully falls back to national documentary photo for other states. | ✅ VERIFIED |
 | **Image Network Resilience** | `Hero.jsx`, `Professions.jsx` | Every `<img>` tag implements an `onError` event handler to prevent broken image icons or layout shifts if an image fails to load. | ✅ VERIFIED |
 

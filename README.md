@@ -120,7 +120,7 @@ We are committed to absolute transparency regarding what is implemented, what is
 | **Theme Engine (Light, Dark, System)** | 2 | ✅ Implemented | `ThemeContext.jsx`, zero FOUC script in `index.html`, Tailwind tokens |
 | **Multilingual Engine (7 Languages)** | 2 | ✅ Implemented | English, Hindi, Kannada, Bengali, Marathi, Telugu, Tamil (`src/i18n/translations.js`) |
 | **Regional Personalisation (36 States/UTs)** | 2 | ✅ Implemented | Decoupled state engine in `src/data/regions.js` & `RegionContext.jsx` |
-| **Authentic Trade Photo Registry** | 2 | ✅ Implemented | Curated Pexels & Unsplash documentary trade photography with zero AI faces (`PHOTO_SOURCES.md`) |
+| **Authentic Trade Photo Registry & High-Res Assets** | 2 | ✅ Implemented | Curated documentary photography with zero AI faces (`PHOTO_SOURCES.md`); 2048×1365 local WebP/JPG assets for About section |
 | **Worker Experience Portal** | 2 | ✅ Implemented | Responsive sidebar/topbar layout, quick stats (`src/pages/worker/WorkerLayout.jsx`) |
 | **Dynamic Profile Completion Metric** | 2 | ✅ Implemented | Dynamic calculation based on completed profile fields (`demoWorkerService.js`) |
 | **Worker Profile Management** | 2 | ✅ Implemented | Interactive editing with local state persistence (`src/pages/worker/WorkerProfile.jsx`) |

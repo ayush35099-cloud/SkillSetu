@@ -141,12 +141,16 @@ export const VERIFIED_INDIAN_PHOTOS = {
     trade: 'other'
   },
 
-  // Women in Skilled Trades Representation (Photo 2 from user selection)
+  // Women in Skilled Trades Representation (Photo 2 from user selection - 2048x1365 High-Res)
   women_in_trades: {
     id: 'pexels-31199578',
-    url: 'https://images.pexels.com/photos/31199578/pexels-photo-31199578.jpeg',
+    url: `${import.meta.env.BASE_URL}images/textile-worker.webp`,
+    fallbackJpg: `${import.meta.env.BASE_URL}images/textile-worker.jpg`,
+    originalJpg: `${import.meta.env.BASE_URL}images/textile-worker-original.jpg`,
+    remoteUrl: 'https://images.pexels.com/photos/31199578/pexels-photo-31199578.jpeg?auto=compress&cs=tinysrgb&w=2048',
     alt: 'Indian female artisan smiling while operating an industrial sewing machine in a textile workshop',
     credit: 'EqualStock IN / Pexels',
+    resolution: '2048x1365',
     location: 'Textile & Garment Craft Workshop',
     caption: 'Artisan craftsmanship and dignity of women in vocational production',
     tags: ['women', 'artisan', 'textile', 'garment']
