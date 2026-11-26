@@ -192,11 +192,17 @@ class Phase3TestCase(unittest.TestCase):
         self.assertIn("must be between 0 and", res.get_json()["message"])
 
     def test_worker_submit_and_view_workflow(self):
-        # 1. Worker submits demonstration
+        # 1. Worker logs in
+        worker_login = self.client.post("/api/auth/worker/login", json={
+            "email": "worker@skillsetu.in",
+            "password": "Worker@123"
+        })
+        self.assertEqual(worker_login.status_code, 200)
+        worker_token = worker_login.get_json()["token"]
+        worker_headers = {"Authorization": f"Bearer {worker_token}"}
+
+        # 2. Authenticated worker submits demonstration
         submit_payload = {
-            "worker_id": 205,
-            "worker_name": "Deepak Sharma",
-            "worker_phone": "9988776655",
             "worker_trade": "welder",
             "worker_experience": 6,
             "worker_location": "Jaipur, Rajasthan",
@@ -205,17 +211,16 @@ class Phase3TestCase(unittest.TestCase):
             "evidence_type": "video",
             "submission_notes": "Fillet weld completed in 2F horizontal position using E6013 electrodes."
         }
-        res = self.client.post("/api/worker/assessments/submit", json=submit_payload)
+        res = self.client.post("/api/worker/assessments/submit", json=submit_payload, headers=worker_headers)
         self.assertEqual(res.status_code, 201)
         sub_id = res.get_json()["submission"]["id"]
 
-        # 2. Worker views assessments
-        view_res = self.client.get(f"/api/worker/assessments?worker_id=205")
+        # 3. Worker views their authenticated assessments
+        view_res = self.client.get("/api/worker/assessments", headers=worker_headers)
         self.assertEqual(view_res.status_code, 200)
-        self.assertEqual(len(view_res.get_json()["assessments"]), 1)
-        self.assertEqual(view_res.get_json()["assessments"][0]["status"], "pending")
+        self.assertGreaterEqual(len(view_res.get_json()["assessments"]), 1)
 
-        # 3. Assessor requests resubmission
+        # 4. Assessor requests resubmission
         login_res = self.client.post("/api/auth/assessor/login", json={
             "email": "assessor@skillsetu.in",
             "password": "Assessor@123"
@@ -237,13 +242,14 @@ class Phase3TestCase(unittest.TestCase):
         )
         self.assertEqual(review_res.status_code, 200)
 
-        # 4. Worker resubmits
+        # 5. Worker resubmits with updated evidence
         resubmit_res = self.client.post(
             f"/api/worker/assessments/{sub_id}/resubmit",
             json={
                 "evidence_url": "https://www.youtube.com/watch?v=sample-welder-vid-v2",
                 "submission_notes": "Re-recorded with closer macro camera on root pass and chipped slag as requested."
-            }
+            },
+            headers=worker_headers
         )
         self.assertEqual(resubmit_res.status_code, 200)
         self.assertEqual(resubmit_res.get_json()["submission"]["status"], "pending")

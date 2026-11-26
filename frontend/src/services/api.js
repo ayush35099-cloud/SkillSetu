@@ -15,8 +15,10 @@ const rawUrl = envBase
 
 const API_BASE_URL = (rawUrl || '').replace(/\/+$/, '');
 
-const ASSESSOR_TOKEN_KEY = 'skillsetu_assessor_token';
-const ASSESSOR_USER_KEY = 'skillsetu_assessor_user';
+const AUTH_TOKEN_KEY = 'skillsetu_auth_token';
+const AUTH_USER_KEY = 'skillsetu_auth_user';
+const LEGACY_ASSESSOR_TOKEN_KEY = 'skillsetu_assessor_token';
+const LEGACY_ASSESSOR_USER_KEY = 'skillsetu_assessor_user';
 
 export const apiService = {
   /**
@@ -31,7 +33,7 @@ export const apiService = {
   // --------------------------------------------------------------------------
   getToken() {
     try {
-      return localStorage.getItem(ASSESSOR_TOKEN_KEY) || '';
+      return localStorage.getItem(AUTH_TOKEN_KEY) || localStorage.getItem(LEGACY_ASSESSOR_TOKEN_KEY) || '';
     } catch {
       return '';
     }
@@ -40,9 +42,11 @@ export const apiService = {
   setToken(token) {
     try {
       if (token) {
-        localStorage.setItem(ASSESSOR_TOKEN_KEY, token);
+        localStorage.setItem(AUTH_TOKEN_KEY, token);
+        localStorage.setItem(LEGACY_ASSESSOR_TOKEN_KEY, token);
       } else {
-        localStorage.removeItem(ASSESSOR_TOKEN_KEY);
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.removeItem(LEGACY_ASSESSOR_TOKEN_KEY);
       }
     } catch (e) {
       console.warn('Could not store token in localStorage:', e);
@@ -51,7 +55,7 @@ export const apiService = {
 
   getStoredUser() {
     try {
-      const data = localStorage.getItem(ASSESSOR_USER_KEY);
+      const data = localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem(LEGACY_ASSESSOR_USER_KEY);
       return data ? JSON.parse(data) : null;
     } catch {
       return null;
@@ -61,9 +65,11 @@ export const apiService = {
   setStoredUser(user) {
     try {
       if (user) {
-        localStorage.setItem(ASSESSOR_USER_KEY, JSON.stringify(user));
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+        localStorage.setItem(LEGACY_ASSESSOR_USER_KEY, JSON.stringify(user));
       } else {
-        localStorage.removeItem(ASSESSOR_USER_KEY);
+        localStorage.removeItem(AUTH_USER_KEY);
+        localStorage.removeItem(LEGACY_ASSESSOR_USER_KEY);
       }
     } catch (e) {
       console.warn('Could not store user in localStorage:', e);
@@ -72,8 +78,10 @@ export const apiService = {
 
   logout() {
     try {
-      localStorage.removeItem(ASSESSOR_TOKEN_KEY);
-      localStorage.removeItem(ASSESSOR_USER_KEY);
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      localStorage.removeItem(AUTH_USER_KEY);
+      localStorage.removeItem(LEGACY_ASSESSOR_TOKEN_KEY);
+      localStorage.removeItem(LEGACY_ASSESSOR_USER_KEY);
     } catch (e) {
       console.warn('Logout error:', e);
     }
@@ -157,6 +165,57 @@ export const apiService = {
     return data;
   },
 
+  async workerRegister(payload) {
+    const response = await fetch(`${API_BASE_URL}/api/auth/worker/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || `Worker registration failed (HTTP ${response.status})`);
+    }
+    if (data.token) {
+      this.setToken(data.token);
+      this.setStoredUser(data.user);
+    }
+    return data;
+  },
+
+  async workerLogin(email, password) {
+    const response = await fetch(`${API_BASE_URL}/api/auth/worker/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || `Worker login failed (HTTP ${response.status})`);
+    }
+    if (data.token) {
+      this.setToken(data.token);
+      this.setStoredUser(data.user);
+    }
+    return data;
+  },
+
+  async login(email, password) {
+    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || `Login failed (HTTP ${response.status})`);
+    }
+    if (data.token) {
+      this.setToken(data.token);
+      this.setStoredUser(data.user);
+    }
+    return data;
+  },
+
   async adminLogin(email, password) {
     const response = await fetch(`${API_BASE_URL}/api/auth/admin/login`, {
       method: 'POST',
@@ -182,6 +241,16 @@ export const apiService = {
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Session expired');
     if (data.user) this.setStoredUser(data.user);
+    return data;
+  },
+
+  async getWorkerProfile() {
+    const response = await fetch(`${API_BASE_URL}/api/worker/profile`, {
+      method: 'GET',
+      headers: this.getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch worker profile');
     return data;
   },
 
@@ -295,12 +364,13 @@ export const apiService = {
   },
 
   // --------------------------------------------------------------------------
-  // Worker Demonstration APIs
+  // Worker Demonstration APIs (Authenticated with Session Token)
   // --------------------------------------------------------------------------
-  async getWorkerAssessments(workerId = 101) {
-    const response = await fetch(`${API_BASE_URL}/api/worker/assessments?worker_id=${workerId}`, {
+  async getWorkerAssessments(workerId = null) {
+    const qs = workerId ? `?worker_id=${workerId}` : '';
+    const response = await fetch(`${API_BASE_URL}/api/worker/assessments${qs}`, {
       method: 'GET',
-      headers: { 'Accept': 'application/json' }
+      headers: this.getAuthHeaders()
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to load worker assessments');
@@ -310,7 +380,7 @@ export const apiService = {
   async getWorkerAssessment(id) {
     const response = await fetch(`${API_BASE_URL}/api/worker/assessments/${id}`, {
       method: 'GET',
-      headers: { 'Accept': 'application/json' }
+      headers: this.getAuthHeaders()
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to load assessment detail');
@@ -320,7 +390,7 @@ export const apiService = {
   async submitWorkerDemonstration(payload) {
     const response = await fetch(`${API_BASE_URL}/api/worker/assessments/submit`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      headers: this.getAuthHeaders(),
       body: JSON.stringify(payload)
     });
     const data = await response.json();
@@ -331,7 +401,7 @@ export const apiService = {
   async resubmitWorkerDemonstration(id, payload) {
     const response = await fetch(`${API_BASE_URL}/api/worker/assessments/${id}/resubmit`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      headers: this.getAuthHeaders(),
       body: JSON.stringify(payload)
     });
     const data = await response.json();

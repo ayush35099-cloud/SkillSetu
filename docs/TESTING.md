@@ -58,8 +58,21 @@ cd backend
 python -m unittest tests/test_credentials.py -v
 ```
 
+### Backend Worker Skills & Demonstration Test Suite
+Run the authenticated worker demonstration, cross-worker isolation, and resubmission lifecycle test suite:
+
+```bash
+cd backend
+python -m unittest tests/test_worker_skills.py -v
+```
+
 #### Expected Outcome:
-- All 14 tests in `tests/test_phase3.py` and `tests/test_credentials.py` pass (`OK`).
+- All 19 tests across `tests/test_phase3.py`, `tests/test_credentials.py`, and `tests/test_worker_skills.py` pass (`OK`).
+- Validates worker registration (`POST /api/auth/worker/register`) and login (`POST /api/auth/worker/login`).
+- Validates 401 Unauthorized on unauthenticated requests.
+- Validates cross-worker isolation (Worker A's submissions are 403 Forbidden to Worker B).
+- Validates client-supplied worker ID is never trusted; identity is derived from verified token (`g.current_user`).
+- Validates resubmission lifecycle, preserving past attempts in `history` JSON.
 - Validates 3-step credential issuance rule (Worker -> Assessor -> Admin).
 - Validates token verification endpoint (`GET /api/credentials/verify/<token>`).
 - Validates zero leakage of personal worker data (phone, email, password hash).

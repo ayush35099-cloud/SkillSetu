@@ -9,6 +9,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(150), nullable=False)
     email = db.Column(db.String(150), unique=True, index=True, nullable=False)
+    phone = db.Column(db.String(50), nullable=True)
+    location = db.Column(db.String(150), nullable=True)
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(50), nullable=False, default="assessor")  # assessor | admin | worker | contractor
     professional_qualification = db.Column(db.String(255), nullable=True)
@@ -35,9 +37,12 @@ class User(db.Model):
             "id": self.id,
             "full_name": self.full_name,
             "email": self.email,
+            "phone": self.phone,
+            "location": self.location,
             "role": self.role,
             "professional_qualification": self.professional_qualification,
             "years_of_experience": self.years_of_experience,
+            "trade": self.specialisation,
             "specialisation": self.specialisation,
             "verification_status": self.verification_status,
             "is_approved": self.is_approved_assessor(),
@@ -132,6 +137,8 @@ class AssessmentSubmission(db.Model):
     submission_notes = db.Column(db.Text, nullable=True)
     status = db.Column(db.String(50), default="pending", index=True)
     # Statuses: pending | under_review | approved | rejected | resubmission_requested
+    attempt_count = db.Column(db.Integer, default=1)
+    history = db.Column(db.JSON, default=list)
     submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -159,6 +166,8 @@ class AssessmentSubmission(db.Model):
             "evidence_type": self.evidence_type,
             "submission_notes": self.submission_notes,
             "status": self.status,
+            "attempt_count": self.attempt_count or 1,
+            "history": self.history or [],
             "submitted_at": self.submitted_at.isoformat() if self.submitted_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

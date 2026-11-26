@@ -76,7 +76,10 @@ class SkillCredentialTestCase(unittest.TestCase):
 
     def test_worker_credentials_endpoint(self):
         """Worker credentials query should return credentials for specified worker_id."""
-        res = self.client.get("/api/worker/credentials?worker_id=104")
+        with self.app.app_context():
+            kavita = User.query.filter_by(email="kavita.devi@skillsetu.in").first()
+            kavita_id = kavita.id if kavita else 104
+        res = self.client.get(f"/api/worker/credentials?worker_id={kavita_id}")
         self.assertEqual(res.status_code, 200)
         data = res.get_json()
         self.assertEqual(data["status"], "success")

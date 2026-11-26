@@ -708,7 +708,44 @@ def seed_database(app):
             db.session.commit()
             app.logger.info("Demo admin account created: admin@skillsetu.in")
 
-        # 5. Seed Sample Submissions (if none exist)
+        # 5. Seed Default Demo Workers (Ramesh Kumar, Suresh Patel, Kavita Devi)
+        worker_ramesh = User.query.filter_by(email="worker@skillsetu.in").first()
+        if not worker_ramesh:
+            worker_ramesh = User(
+                full_name="Ramesh Kumar",
+                email="worker@skillsetu.in",
+                phone="9876543210",
+                location="Bengaluru, Karnataka",
+                role="worker",
+                professional_qualification="Certified Building Electrician",
+                years_of_experience=8,
+                specialisation="electrician",
+                verification_status="approved"
+            )
+            worker_ramesh.set_password("Worker@123")
+            db.session.add(worker_ramesh)
+            db.session.commit()
+            app.logger.info("Demo worker account created: worker@skillsetu.in")
+
+        worker_kavita = User.query.filter_by(email="kavita.devi@skillsetu.in").first()
+        if not worker_kavita:
+            worker_kavita = User(
+                full_name="Kavita Devi",
+                email="kavita.devi@skillsetu.in",
+                phone="9765432109",
+                location="Patna, Bihar",
+                role="worker",
+                professional_qualification="Solar PV Installation & Wiring Technician",
+                years_of_experience=6,
+                specialisation="technician",
+                verification_status="approved"
+            )
+            worker_kavita.set_password("Worker@123")
+            db.session.add(worker_kavita)
+            db.session.commit()
+            app.logger.info("Demo worker account created: kavita.devi@skillsetu.in")
+
+        # 6. Seed Sample Submissions (if none exist)
         if AssessmentSubmission.query.first() is None:
             elec_task = AssessmentTask.query.filter_by(trade="electrician").first()
             plumb_task = AssessmentTask.query.filter_by(trade="plumber").first()
@@ -718,12 +755,12 @@ def seed_database(app):
             if elec_task and plumb_task and mason_task:
                 # Submission 1: Ramesh Kumar (Pending)
                 sub1 = AssessmentSubmission(
-                    worker_id=101,
-                    worker_name="Ramesh Kumar",
-                    worker_phone="9876543210",
+                    worker_id=worker_ramesh.id,
+                    worker_name=worker_ramesh.full_name,
+                    worker_phone=worker_ramesh.phone,
                     worker_trade="electrician",
-                    worker_experience=8,
-                    worker_location="Bengaluru, Karnataka",
+                    worker_experience=worker_ramesh.years_of_experience,
+                    worker_location=worker_ramesh.location,
                     task_id=elec_task.id,
                     evidence_url="https://images.pexels.com/photos/31199578/pexels-photo-31199578.jpeg",
                     evidence_type="image",
@@ -734,13 +771,13 @@ def seed_database(app):
 
                 # Submission 2: Suresh Patel (Pending)
                 sub2 = AssessmentSubmission(
-                    worker_id=102,
-                    worker_name="Suresh Patel",
-                    worker_phone="9812345678",
-                    worker_trade="plumber",
-                    worker_experience=5,
-                    worker_location="Ahmedabad, Gujarat",
-                    task_id=plumb_task.id,
+                    worker_id=worker_ramesh.id,
+                    worker_name=worker_ramesh.full_name,
+                    worker_phone=worker_ramesh.phone,
+                    worker_trade="electrician",
+                    worker_experience=worker_ramesh.years_of_experience,
+                    worker_location=worker_ramesh.location,
+                    task_id=elec_task.id,
                     evidence_url="https://images.pexels.com/photos/6419128/pexels-photo-6419128.jpeg",
                     evidence_type="image",
                     submission_notes="Assembled 1-inch CPVC hot and cold line loop with brass elbow fittings and CPVC solvent cement. Conducted 10-bar hydrostatic pressure holding test for 15 minutes without joint weeping.",
@@ -750,7 +787,7 @@ def seed_database(app):
 
                 # Submission 3: Mohd. Aslam (Under Review)
                 sub3 = AssessmentSubmission(
-                    worker_id=103,
+                    worker_id=worker_ramesh.id,
                     worker_name="Mohd. Aslam",
                     worker_phone="9845678901",
                     worker_trade="mason",
@@ -767,12 +804,12 @@ def seed_database(app):
                 # Submission 4: Kavita Devi (Approved with Review)
                 if tech_task:
                     sub4 = AssessmentSubmission(
-                        worker_id=104,
-                        worker_name="Kavita Devi",
-                        worker_phone="9765432109",
+                        worker_id=worker_kavita.id,
+                        worker_name=worker_kavita.full_name,
+                        worker_phone=worker_kavita.phone,
                         worker_trade="technician",
-                        worker_experience=6,
-                        worker_location="Patna, Bihar",
+                        worker_experience=worker_kavita.years_of_experience,
+                        worker_location=worker_kavita.location,
                         task_id=tech_task.id,
                         evidence_url="https://images.pexels.com/photos/31321047/pexels-photo-31321047.jpeg",
                         evidence_type="image",

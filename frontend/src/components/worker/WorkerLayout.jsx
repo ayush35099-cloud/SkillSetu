@@ -7,6 +7,7 @@ import {
   getWorkerProfile, 
   calculateProfileCompletion 
 } from '../../services/demoWorkerService';
+import { apiService } from '../../services/api';
 import ThemeSwitcher from '../ThemeSwitcher';
 import { 
   LayoutDashboard, 
@@ -21,7 +22,8 @@ import {
   Sparkles,
   AlertTriangle,
   Globe2,
-  HelpCircle
+  HelpCircle,
+  UserCheck
 } from 'lucide-react';
 
 export default function WorkerLayout() {
@@ -31,12 +33,14 @@ export default function WorkerLayout() {
 
   const [profile, setProfile] = useState(() => getWorkerProfile());
   const [completion, setCompletion] = useState(() => calculateProfileCompletion(profile));
+  const [authUser, setAuthUser] = useState(() => apiService.getStoredUser());
 
   useEffect(() => {
     const handleProfileUpdate = () => {
       const p = getWorkerProfile();
       setProfile(p);
       setCompletion(calculateProfileCompletion(p));
+      setAuthUser(apiService.getStoredUser());
     };
 
     window.addEventListener('profile-updated', handleProfileUpdate);
@@ -46,6 +50,12 @@ export default function WorkerLayout() {
       window.removeEventListener('storage', handleProfileUpdate);
     };
   }, []);
+
+  // Use authenticated user profile if logged in
+  const displayName = authUser?.full_name || profile.fullName || t('worker.nav.workerName', 'Ramesh Kumar');
+  const displayTrade = authUser?.trade || authUser?.specialisation || profile.primaryTrade || 'Electrician';
+  const displayLocation = authUser?.location || profile.location || 'Bengaluru, Karnataka';
+  const displayExp = authUser?.years_of_experience ?? profile.experience ?? 8;
 
   const navItems = [
     {
@@ -134,16 +144,16 @@ export default function WorkerLayout() {
           {/* Worker Identity Card */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
             <div className="flex items-center gap-4">
-              {/* Avatar with Demo Indicator */}
+              {/* Avatar */}
               <div className="relative">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-amber-500/20 border-2 border-amber-400 text-amber-200 flex items-center justify-center font-heading text-2xl font-black shadow-inner">
-                  {profile.fullName ? profile.fullName.split(' ').map(n => n[0]).join('').slice(0, 2) : 'RK'}
+                  {displayName ? displayName.split(' ').map(n => n[0]).join('').slice(0, 2) : 'RK'}
                 </div>
                 <div 
-                  title="Demo Profile Status"
+                  title={authUser ? 'Verified Worker Account' : 'Demo Profile Status'}
                   className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-amber-500 text-teal-950 flex items-center justify-center ring-2 ring-teal-900 dark:ring-charcoal-900 shadow-sm"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
+                  {authUser ? <UserCheck className="w-3.5 h-3.5" /> : <Sparkles className="w-3.5 h-3.5" />}
                 </div>
               </div>
 
@@ -151,25 +161,29 @@ export default function WorkerLayout() {
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-xl sm:text-2xl font-bold font-heading text-white">
-                    {profile.fullName || t('worker.nav.workerName', 'Ramesh Kumar')}
+                    {displayName}
                   </h1>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full">
-                    <span>{t('worker.demoProfileBadge', 'Demo Worker Profile')}</span>
+                  <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full border ${
+                    authUser
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+                      : 'bg-amber-400/20 text-amber-300 border-amber-400/40'
+                  }`}>
+                    <span>{authUser ? 'Verified Worker Account' : t('worker.demoProfileBadge', 'Demo Worker Profile')}</span>
                   </span>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-teal-200 dark:text-ivory/70">
                   <span className="flex items-center gap-1 font-medium capitalize">
                     <HardHat className="w-3.5 h-3.5 text-terracotta-300" />
-                    <span>{profile.primaryTrade || 'Electrician'}</span>
+                    <span>{displayTrade}</span>
                   </span>
                   <span className="text-teal-400">•</span>
                   <span className="flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5 text-teal-300" />
-                    <span>{profile.location || 'Bengaluru, Karnataka'}</span>
+                    <span>{displayLocation}</span>
                   </span>
                   <span className="text-teal-400">•</span>
-                  <span>{profile.experience || 8} yrs practical exp</span>
+                  <span>{displayExp} yrs practical exp</span>
                   <span className="text-teal-400">•</span>
                   <span className="text-amber-300 font-semibold">{completion.percentage}% Profile Complete</span>
                 </div>
