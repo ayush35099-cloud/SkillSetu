@@ -315,22 +315,6 @@ export default function WorkerSkills() {
     }
   };
 
-  const handleQuickDemoLogin = async (demoEmail, demoPass) => {
-    setAuthLoading(true);
-    setAuthError(null);
-    try {
-      const res = await apiService.workerLogin(demoEmail, demoPass);
-      setCurrentUser(res.user);
-      if (res.user.specialisation && tradesData[res.user.specialisation]) {
-        setSelectedTrade(res.user.specialisation);
-      }
-    } catch (err) {
-      setAuthError(err.message || 'Demo login failed');
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
   const handleLogout = () => {
     apiService.logout();
     setCurrentUser(null);
@@ -525,49 +509,6 @@ export default function WorkerSkills() {
             </div>
           )}
 
-          {/* Quick Demo Login Preset Buttons for Evaluator Convenience */}
-          <div className="p-4 rounded-2xl bg-sand-50 dark:bg-charcoal-900 border border-beige dark:border-charcoal-700 text-left space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-teal dark:text-ivory">1-Click Evaluator Demo Accounts:</span>
-              <span className="text-[10px] text-terracotta font-mono font-bold">Quick Auth</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-              <button
-                type="button"
-                disabled={authLoading}
-                onClick={() => handleQuickDemoLogin('worker@skillsetu.in', 'Worker@123')}
-                className="p-2.5 rounded-xl bg-white dark:bg-charcoal-800 border border-beige dark:border-charcoal-600 hover:border-terracotta text-left transition-all group"
-              >
-                <div className="flex items-center justify-between">
-                  <strong className="text-xs font-bold text-teal dark:text-ivory group-hover:text-terracotta">
-                    Ramesh Kumar
-                  </strong>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">Electrician</span>
-                </div>
-                <p className="text-[11px] text-greygreen dark:text-ivory/60 mt-0.5">
-                  worker@skillsetu.in / Worker@123
-                </p>
-              </button>
-
-              <button
-                type="button"
-                disabled={authLoading}
-                onClick={() => handleQuickDemoLogin('kavita.devi@skillsetu.in', 'Worker@123')}
-                className="p-2.5 rounded-xl bg-white dark:bg-charcoal-800 border border-beige dark:border-charcoal-600 hover:border-terracotta text-left transition-all group"
-              >
-                <div className="flex items-center justify-between">
-                  <strong className="text-xs font-bold text-teal dark:text-ivory group-hover:text-terracotta">
-                    Kavita Devi
-                  </strong>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold">Technician</span>
-                </div>
-                <p className="text-[11px] text-greygreen dark:text-ivory/60 mt-0.5">
-                  kavita.devi@skillsetu.in / Worker@123
-                </p>
-              </button>
-            </div>
-          </div>
-
           {/* Tab Selector */}
           <div className="flex border-b border-beige dark:border-charcoal-700 gap-4 pt-2 justify-center">
             <button
@@ -605,7 +546,7 @@ export default function WorkerSkills() {
                   type="email"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder="e.g. worker@skillsetu.in"
+                  placeholder="e.g. artisan@example.com"
                   required
                   className="w-full px-3.5 py-2.5 rounded-xl border border-beige dark:border-charcoal-600 bg-sand-50 dark:bg-charcoal-900 text-xs text-teal dark:text-ivory"
                 />

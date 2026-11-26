@@ -19,29 +19,43 @@ export default function AssessorLogin() {
   const location = useLocation();
   const from = location.state?.from?.pathname || '/assessor';
 
-  const [email, setEmail] = useState('assessor@skillsetu.in');
-  const [password, setPassword] = useState('Assessor@123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [errorState, setErrorState] = useState(null); // { type: 'auth'|'server'|'network', message: string }
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (!email.trim() || !password) {
+      setErrorState({ type: 'auth', message: 'Please enter both email address and password.' });
+      return;
+    }
+
     setLoading(true);
-    setError(null);
+    setErrorState(null);
     try {
-      await apiService.assessorLogin(email, password);
+      await apiService.assessorLogin(email.trim(), password);
       navigate(from, { replace: true });
     } catch (err) {
-      console.error('Assessor login failed:', err);
-      setError(err.message || 'Invalid email or password.');
+      if (err?.isNetworkError) {
+        setErrorState({
+          type: 'network',
+          message: err.message || 'Unable to reach SkillSetu server. Render may be waking up (~45s); please retry shortly.'
+        });
+      } else if (err?.isServerError || (err?.status >= 500)) {
+        setErrorState({
+          type: 'server',
+          message: err.message || 'The authentication service is temporarily unavailable. Please try again in a moment.'
+        });
+      } else {
+        setErrorState({
+          type: 'auth',
+          message: err?.message || 'Invalid email address or password.'
+        });
+      }
     } finally {
       setLoading(false);
     }
-  };
-
-  const setCredentials = (eMail, pwd) => {
-    setEmail(eMail);
-    setPassword(pwd);
   };
 
   return (
@@ -83,10 +97,26 @@ export default function AssessorLogin() {
         {/* Card */}
         <div className="bg-white dark:bg-charcoal-800 py-8 px-6 sm:px-10 rounded-3xl shadow-xl border border-beige dark:border-charcoal-700 space-y-6">
           
-          {error && (
-            <div className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-xs font-bold flex items-center gap-2 border border-red-200 dark:border-red-800">
-              <AlertTriangle className="w-4 h-4 shrink-0" />
-              <span>{error}</span>
+          {errorState && (
+            <div
+              role="alert"
+              className={`p-3.5 rounded-2xl text-xs font-bold flex items-start gap-2 border ${
+                errorState.type === 'network'
+                  ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                  : 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800'
+              }`}
+            >
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <span className="block uppercase text-[10px] tracking-wider opacity-80">
+                  {errorState.type === 'network'
+                    ? 'Connection / Cold-Start Notice'
+                    : errorState.type === 'server'
+                      ? 'Service Unavailable'
+                      : 'Authentication Notice'}
+                </span>
+                <span>{errorState.message}</span>
+              </div>
             </div>
           )}
 
@@ -103,7 +133,7 @@ export default function AssessorLogin() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="assessor@skillsetu.in"
+                  placeholder="assessor@organization.in"
                   required
                   className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-sand-50/60 dark:bg-charcoal-900 border border-beige dark:border-charcoal-600 text-xs sm:text-sm text-teal dark:text-ivory focus:ring-2 focus:ring-terracotta font-medium"
                 />
@@ -121,6 +151,7 @@ export default function AssessorLogin() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
                   required
                   className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-sand-50/60 dark:bg-charcoal-900 border border-beige dark:border-charcoal-600 text-xs sm:text-sm text-teal dark:text-ivory focus:ring-2 focus:ring-terracotta font-medium"
                 />
@@ -147,48 +178,13 @@ export default function AssessorLogin() {
             </button>
           </form>
 
-          {/* Quick Demo Pre-fill Accounts */}
+          {/* Access Roles Overview (No Hardcoded Credentials) */}
           <div className="pt-4 border-t border-beige dark:border-charcoal-700 space-y-2">
-            <span className="block text-[10px] font-bold uppercase tracking-wider text-greygreen dark:text-ivory/60 text-center">
-              1-Click Demo Testing Credentials:
-            </span>
-
-            <div className="grid grid-cols-1 gap-1.5">
-              <button
-                type="button"
-                onClick={() => setCredentials('assessor@skillsetu.in', 'Assessor@123')}
-                className="w-full p-2.5 rounded-xl bg-sand-50 hover:bg-sand-100 dark:bg-charcoal-700/60 dark:hover:bg-charcoal-700 border border-beige dark:border-charcoal-600 text-left flex items-center justify-between text-xs transition-colors"
-              >
-                <div>
-                  <strong className="block text-teal dark:text-ivory font-bold">Approved Master Assessor</strong>
-                  <span className="text-[10px] text-greygreen dark:text-ivory/60">assessor@skillsetu.in (Full Access)</span>
-                </div>
-                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">Approved</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setCredentials('vikram.assessor@skillsetu.in', 'Assessor@123')}
-                className="w-full p-2.5 rounded-xl bg-sand-50 hover:bg-sand-100 dark:bg-charcoal-700/60 dark:hover:bg-charcoal-700 border border-beige dark:border-charcoal-600 text-left flex items-center justify-between text-xs transition-colors"
-              >
-                <div>
-                  <strong className="block text-teal dark:text-ivory font-bold">Pending Assessor</strong>
-                  <span className="text-[10px] text-greygreen dark:text-ivory/60">vikram.assessor@skillsetu.in (Test Gating)</span>
-                </div>
-                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">Pending</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setCredentials('admin@skillsetu.in', 'Admin@123')}
-                className="w-full p-2.5 rounded-xl bg-sand-50 hover:bg-sand-100 dark:bg-charcoal-700/60 dark:hover:bg-charcoal-700 border border-beige dark:border-charcoal-600 text-left flex items-center justify-between text-xs transition-colors"
-              >
-                <div>
-                  <strong className="block text-teal dark:text-ivory font-bold">Platform Administrator</strong>
-                  <span className="text-[10px] text-greygreen dark:text-ivory/60">admin@skillsetu.in (Approvals)</span>
-                </div>
-                <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400">Admin</span>
-              </button>
+            <div className="p-3 rounded-2xl bg-sand-50 dark:bg-charcoal-900 border border-beige dark:border-charcoal-700 text-[11px] text-greygreen dark:text-ivory/70 leading-relaxed flex items-start gap-2">
+              <ShieldCheck className="w-4 h-4 text-teal dark:text-amber-300 shrink-0 mt-0.5" />
+              <span>
+                Only accredited trade assessors and authorized administrators may sign in here. Approved assessors can score submissions and issue review decisions.
+              </span>
             </div>
           </div>
 

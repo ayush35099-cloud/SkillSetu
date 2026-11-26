@@ -5,24 +5,42 @@ from .config import Config
 
 db = SQLAlchemy()
 
+
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    app.config["DB_INITIALIZED"] = False
+    app.config["DB_INIT_ERROR"] = None
 
     # Configure CORS
     CORS(app, resources={r"/*": {"origins": app.config.get("CORS_ORIGINS", "*")}})
 
-    # Initialize SQLAlchemy only if URI is configured
+    # Initialize SQLAlchemy and fail fast if schema migration/verification fails
     if app.config.get("SQLALCHEMY_DATABASE_URI"):
         db.init_app(app)
         with app.app_context():
-            from . import models
+            from . import models  # noqa: F401
+            from .migrations import (
+                migration_lock,
+                run_migrations,
+                verify_schema,
+                sanitize_db_error,
+            )
+            from .seeds import seed_database
+
             try:
-                db.create_all()
-                from .seeds import seed_database
-                seed_database(app)
-            except Exception as e:
-                app.logger.warning(f"Database initialization note: {e}")
+                with migration_lock(db.engine):
+                    db.create_all()
+                    run_migrations(app, db)
+                    verify_schema(db)
+                    seed_database(app)
+                app.config["DB_INITIALIZED"] = True
+            except Exception as exc:
+                safe_msg = sanitize_db_error(exc)
+                app.config["DB_INITIALIZED"] = False
+                app.config["DB_INIT_ERROR"] = safe_msg
+                app.logger.error(f"Database initialization/migration failed: {safe_msg}")
+                raise RuntimeError(f"Database initialization failed: {safe_msg}") from exc
 
     # Register blueprints
     from .routes import (
@@ -32,7 +50,7 @@ def create_app(config_class=Config):
         task_bp,
         assessor_bp,
         worker_bp,
-        admin_bp
+        admin_bp,
     )
     app.register_blueprint(main_bp)
     app.register_blueprint(api_bp)

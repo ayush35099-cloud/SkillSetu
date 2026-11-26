@@ -66,8 +66,16 @@ cd backend
 python -m unittest tests/test_worker_skills.py -v
 ```
 
+### Backend Schema Migration & Integrity Test Suite
+Run the legacy schema upgrade, idempotency, secret sanitization, and drift detection test suite:
+
+```bash
+cd backend
+python -m unittest tests/test_migrations.py -v
+```
+
 #### Expected Outcome:
-- All 19 tests across `tests/test_phase3.py`, `tests/test_credentials.py`, and `tests/test_worker_skills.py` pass (`OK`).
+- All 22 tests across `tests/test_phase3.py`, `tests/test_credentials.py`, `tests/test_worker_skills.py`, and `tests/test_migrations.py` pass (`OK`).
 - Validates worker registration (`POST /api/auth/worker/register`) and login (`POST /api/auth/worker/login`).
 - Validates 401 Unauthorized on unauthenticated requests.
 - Validates cross-worker isolation (Worker A's submissions are 403 Forbidden to Worker B).

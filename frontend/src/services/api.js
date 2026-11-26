@@ -7,8 +7,8 @@ const PROD_DEFAULT_BACKEND = 'https://skillsetu-backend-47ww.onrender.com';
 const envBase = import.meta.env.VITE_API_BASE_URL;
 
 // Determine active API base URL
-const rawUrl = envBase 
-  ? envBase 
+const rawUrl = envBase
+  ? envBase
   : (typeof window !== 'undefined' && window.location.hostname.includes('github.io'))
     ? PROD_DEFAULT_BACKEND
     : 'http://localhost:5000';
@@ -19,6 +19,22 @@ const AUTH_TOKEN_KEY = 'skillsetu_auth_token';
 const AUTH_USER_KEY = 'skillsetu_auth_user';
 const LEGACY_ASSESSOR_TOKEN_KEY = 'skillsetu_assessor_token';
 const LEGACY_ASSESSOR_USER_KEY = 'skillsetu_assessor_user';
+const DEFAULT_TIMEOUT_MS = 65000; // Covers Render free-tier cold-start spin-up
+
+export class ApiError extends Error {
+  constructor(
+    message,
+    { status = 0, code = null, isNetworkError = false, isServerError = false, isAuthError = false } = {}
+  ) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.code = code;
+    this.isNetworkError = isNetworkError;
+    this.isServerError = isServerError;
+    this.isAuthError = isAuthError;
+  }
+}
 
 export const apiService = {
   /**
@@ -97,161 +113,185 @@ export const apiService = {
   },
 
   // --------------------------------------------------------------------------
+  // Unified Safe Fetch Helper
+  // --------------------------------------------------------------------------
+  async _requestJson(
+    path,
+    { method = 'GET', headers = {}, body = undefined, timeoutMs = DEFAULT_TIMEOUT_MS, allowStatuses = [] } = {},
+    fallbackError = 'Request failed'
+  ) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    let response;
+    try {
+      response = await fetch(`${API_BASE_URL}${path}`, {
+        method,
+        headers,
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+        signal: controller.signal
+      });
+    } catch (err) {
+      const isTimeout = err?.name === 'AbortError';
+      throw new ApiError(
+        isTimeout
+          ? 'The server took too long to respond. Render free-tier services take 30–60s to wake from sleep — please try again.'
+          : 'Unable to connect to the SkillSetu backend. If it was idle, it may be waking up (~45s). Please check your connection and try again.',
+        { status: 0, isNetworkError: true }
+      );
+    } finally {
+      clearTimeout(timer);
+    }
+
+    let data = null;
+    try {
+      const rawText = await response.text();
+      data = rawText ? JSON.parse(rawText) : {};
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok && !allowStatuses.includes(response.status)) {
+      const isServerError = response.status >= 500;
+      const isAuthError = response.status === 401 || response.status === 403;
+      const rawMsg = data?.message;
+
+      let message;
+      if (isServerError) {
+        message =
+          rawMsg && rawMsg !== 'Internal server error'
+            ? rawMsg
+            : `Backend service error (HTTP ${response.status}). The server may be restarting or updating — please retry shortly.`;
+      } else {
+        message = rawMsg || `${fallbackError} (HTTP ${response.status})`;
+      }
+
+      throw new ApiError(message, {
+        status: response.status,
+        code: data?.code || null,
+        isServerError,
+        isAuthError
+      });
+    }
+
+    if (data === null) {
+      throw new ApiError('Received an unexpected non-JSON response from the server.', {
+        status: response.status,
+        isServerError: response.status >= 500
+      });
+    }
+
+    return data;
+  },
+
+  // --------------------------------------------------------------------------
   // Health & Root Status
   // --------------------------------------------------------------------------
   async checkBackendHealth() {
-    const url = `${API_BASE_URL}/api/health`;
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' }
-    });
-    if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-    return await response.json();
+    return this._requestJson(
+      '/api/health',
+      { headers: { 'Accept': 'application/json' } },
+      'Backend health check failed'
+    );
   },
 
   async checkDatabaseHealth() {
-    const url = `${API_BASE_URL}/api/health/db`;
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' }
-    });
-    return await response.json();
+    return this._requestJson(
+      '/api/health/db',
+      { headers: { 'Accept': 'application/json' }, allowStatuses: [503] },
+      'Database health check failed'
+    );
   },
 
   async getRootInfo() {
-    const url = `${API_BASE_URL}/`;
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' }
-    });
-    if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-    return await response.json();
+    return this._requestJson(
+      '/',
+      { headers: { 'Accept': 'application/json' } },
+      'Failed to load API info'
+    );
   },
 
   // --------------------------------------------------------------------------
-  // Assessor Authentication
+  // Authentication (Assessor, Worker, Admin)
   // --------------------------------------------------------------------------
-  async assessorRegister(payload) {
-    const response = await fetch(`${API_BASE_URL}/api/auth/assessor/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || `Registration failed (HTTP ${response.status})`);
-    }
-    if (data.token) {
+  _persistSession(data) {
+    if (data?.token) {
       this.setToken(data.token);
-      this.setStoredUser(data.user);
+      if (data.user) this.setStoredUser(data.user);
     }
     return data;
+  },
+
+  async assessorRegister(payload) {
+    const data = await this._requestJson(
+      '/api/auth/assessor/register',
+      { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: payload },
+      'Registration failed'
+    );
+    return this._persistSession(data);
   },
 
   async assessorLogin(email, password) {
-    const response = await fetch(`${API_BASE_URL}/api/auth/assessor/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || `Login failed (HTTP ${response.status})`);
-    }
-    if (data.token) {
-      this.setToken(data.token);
-      this.setStoredUser(data.user);
-    }
-    return data;
+    const data = await this._requestJson(
+      '/api/auth/assessor/login',
+      { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: { email, password } },
+      'Assessor sign-in failed'
+    );
+    return this._persistSession(data);
   },
 
   async workerRegister(payload) {
-    const response = await fetch(`${API_BASE_URL}/api/auth/worker/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || `Worker registration failed (HTTP ${response.status})`);
-    }
-    if (data.token) {
-      this.setToken(data.token);
-      this.setStoredUser(data.user);
-    }
-    return data;
+    const data = await this._requestJson(
+      '/api/auth/worker/register',
+      { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: payload },
+      'Worker registration failed'
+    );
+    return this._persistSession(data);
   },
 
   async workerLogin(email, password) {
-    const response = await fetch(`${API_BASE_URL}/api/auth/worker/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || `Worker login failed (HTTP ${response.status})`);
-    }
-    if (data.token) {
-      this.setToken(data.token);
-      this.setStoredUser(data.user);
-    }
-    return data;
+    const data = await this._requestJson(
+      '/api/auth/worker/login',
+      { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: { email, password } },
+      'Worker sign-in failed'
+    );
+    return this._persistSession(data);
   },
 
   async login(email, password) {
-    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || `Login failed (HTTP ${response.status})`);
-    }
-    if (data.token) {
-      this.setToken(data.token);
-      this.setStoredUser(data.user);
-    }
-    return data;
+    const data = await this._requestJson(
+      '/api/auth/login',
+      { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: { email, password } },
+      'Sign-in failed'
+    );
+    return this._persistSession(data);
   },
 
   async adminLogin(email, password) {
-    const response = await fetch(`${API_BASE_URL}/api/auth/admin/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || `Admin login failed (HTTP ${response.status})`);
-    }
-    if (data.token) {
-      this.setToken(data.token);
-      this.setStoredUser(data.user);
-    }
-    return data;
+    const data = await this._requestJson(
+      '/api/auth/admin/login',
+      { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: { email, password } },
+      'Administrator sign-in failed'
+    );
+    return this._persistSession(data);
   },
 
   async getMe() {
-    const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-      method: 'GET',
-      headers: this.getAuthHeaders()
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Session expired');
+    const data = await this._requestJson(
+      '/api/auth/me',
+      { headers: this.getAuthHeaders() },
+      'Session expired'
+    );
     if (data.user) this.setStoredUser(data.user);
     return data;
   },
 
   async getWorkerProfile() {
-    const response = await fetch(`${API_BASE_URL}/api/worker/profile`, {
-      method: 'GET',
-      headers: this.getAuthHeaders()
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to fetch worker profile');
-    return data;
+    return this._requestJson(
+      '/api/worker/profile',
+      { headers: this.getAuthHeaders() },
+      'Failed to fetch worker profile'
+    );
   },
 
   // --------------------------------------------------------------------------
@@ -259,36 +299,30 @@ export const apiService = {
   // --------------------------------------------------------------------------
   async getTasks(trade = '') {
     const query = trade ? `?trade=${encodeURIComponent(trade)}` : '';
-    const response = await fetch(`${API_BASE_URL}/api/tasks${query}`, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' }
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to load tasks');
-    return data;
+    return this._requestJson(
+      `/api/tasks${query}`,
+      { headers: { 'Accept': 'application/json' } },
+      'Failed to load tasks'
+    );
   },
 
   async getTask(id) {
-    const response = await fetch(`${API_BASE_URL}/api/tasks/${id}`, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' }
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to load task');
-    return data;
+    return this._requestJson(
+      `/api/tasks/${id}`,
+      { headers: { 'Accept': 'application/json' } },
+      'Failed to load task'
+    );
   },
 
   // --------------------------------------------------------------------------
   // Assessor Portal Operations
   // --------------------------------------------------------------------------
   async getAssessorDashboard() {
-    const response = await fetch(`${API_BASE_URL}/api/assessor/dashboard`, {
-      method: 'GET',
-      headers: this.getAuthHeaders()
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to load dashboard');
-    return data;
+    return this._requestJson(
+      '/api/assessor/dashboard',
+      { headers: this.getAuthHeaders() },
+      'Failed to load dashboard'
+    );
   },
 
   async getAssessorSubmissions({ trade = '', status = '', search = '' } = {}) {
@@ -296,71 +330,53 @@ export const apiService = {
     if (trade && trade !== 'all') params.append('trade', trade);
     if (status && status !== 'all') params.append('status', status);
     if (search) params.append('search', search);
-
     const qs = params.toString() ? `?${params.toString()}` : '';
-    const response = await fetch(`${API_BASE_URL}/api/assessor/submissions${qs}`, {
-      method: 'GET',
-      headers: this.getAuthHeaders()
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to load submissions');
-    return data;
+
+    return this._requestJson(
+      `/api/assessor/submissions${qs}`,
+      { headers: this.getAuthHeaders() },
+      'Failed to load submissions'
+    );
   },
 
   async getAssessorSubmission(id) {
-    const response = await fetch(`${API_BASE_URL}/api/assessor/submissions/${id}`, {
-      method: 'GET',
-      headers: this.getAuthHeaders()
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to load submission');
-    return data;
+    return this._requestJson(
+      `/api/assessor/submissions/${id}`,
+      { headers: this.getAuthHeaders() },
+      'Failed to load submission'
+    );
   },
 
   async submitReview(submissionId, reviewPayload) {
-    const response = await fetch(`${API_BASE_URL}/api/assessor/submissions/${submissionId}/review`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(reviewPayload)
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      const err = new Error(data.message || 'Failed to submit assessment review');
-      err.code = data.code;
-      throw err;
-    }
-    return data;
+    return this._requestJson(
+      `/api/assessor/submissions/${submissionId}/review`,
+      { method: 'POST', headers: this.getAuthHeaders(), body: reviewPayload },
+      'Failed to submit assessment review'
+    );
   },
 
   async getAssessorHistory() {
-    const response = await fetch(`${API_BASE_URL}/api/assessor/history`, {
-      method: 'GET',
-      headers: this.getAuthHeaders()
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to load history');
-    return data;
+    return this._requestJson(
+      '/api/assessor/history',
+      { headers: this.getAuthHeaders() },
+      'Failed to load history'
+    );
   },
 
   async getAssessorProfile() {
-    const response = await fetch(`${API_BASE_URL}/api/assessor/profile`, {
-      method: 'GET',
-      headers: this.getAuthHeaders()
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to load profile');
-    return data;
+    return this._requestJson(
+      '/api/assessor/profile',
+      { headers: this.getAuthHeaders() },
+      'Failed to load profile'
+    );
   },
 
   async updateAssessorProfile(payload) {
-    const response = await fetch(`${API_BASE_URL}/api/assessor/profile`, {
-      method: 'PUT',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(payload)
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to update profile');
-    return data;
+    return this._requestJson(
+      '/api/assessor/profile',
+      { method: 'PUT', headers: this.getAuthHeaders(), body: payload },
+      'Failed to update profile'
+    );
   },
 
   // --------------------------------------------------------------------------
@@ -368,45 +384,35 @@ export const apiService = {
   // --------------------------------------------------------------------------
   async getWorkerAssessments(workerId = null) {
     const qs = workerId ? `?worker_id=${workerId}` : '';
-    const response = await fetch(`${API_BASE_URL}/api/worker/assessments${qs}`, {
-      method: 'GET',
-      headers: this.getAuthHeaders()
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to load worker assessments');
-    return data;
+    return this._requestJson(
+      `/api/worker/assessments${qs}`,
+      { headers: this.getAuthHeaders() },
+      'Failed to load worker assessments'
+    );
   },
 
   async getWorkerAssessment(id) {
-    const response = await fetch(`${API_BASE_URL}/api/worker/assessments/${id}`, {
-      method: 'GET',
-      headers: this.getAuthHeaders()
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to load assessment detail');
-    return data;
+    return this._requestJson(
+      `/api/worker/assessments/${id}`,
+      { headers: this.getAuthHeaders() },
+      'Failed to load assessment detail'
+    );
   },
 
   async submitWorkerDemonstration(payload) {
-    const response = await fetch(`${API_BASE_URL}/api/worker/assessments/submit`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(payload)
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to submit demonstration');
-    return data;
+    return this._requestJson(
+      '/api/worker/assessments/submit',
+      { method: 'POST', headers: this.getAuthHeaders(), body: payload },
+      'Failed to submit demonstration'
+    );
   },
 
   async resubmitWorkerDemonstration(id, payload) {
-    const response = await fetch(`${API_BASE_URL}/api/worker/assessments/${id}/resubmit`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(payload)
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to resubmit demonstration');
-    return data;
+    return this._requestJson(
+      `/api/worker/assessments/${id}/resubmit`,
+      { method: 'POST', headers: this.getAuthHeaders(), body: payload },
+      'Failed to resubmit demonstration'
+    );
   },
 
   // --------------------------------------------------------------------------
@@ -414,86 +420,69 @@ export const apiService = {
   // --------------------------------------------------------------------------
   async getAdminAssessors(status = '') {
     const qs = status ? `?status=${encodeURIComponent(status)}` : '';
-    const response = await fetch(`${API_BASE_URL}/api/admin/assessors${qs}`, {
-      method: 'GET',
-      headers: this.getAuthHeaders()
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to load assessors');
-    return data;
+    return this._requestJson(
+      `/api/admin/assessors${qs}`,
+      { headers: this.getAuthHeaders() },
+      'Failed to load assessors'
+    );
   },
 
   async approveAssessor(id) {
-    const response = await fetch(`${API_BASE_URL}/api/admin/assessors/${id}/approve`, {
-      method: 'PATCH',
-      headers: this.getAuthHeaders()
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to approve assessor');
-    return data;
+    return this._requestJson(
+      `/api/admin/assessors/${id}/approve`,
+      { method: 'PATCH', headers: this.getAuthHeaders() },
+      'Failed to approve assessor'
+    );
   },
 
   async rejectAssessor(id) {
-    const response = await fetch(`${API_BASE_URL}/api/admin/assessors/${id}/reject`, {
-      method: 'PATCH',
-      headers: this.getAuthHeaders()
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to reject assessor');
-    return data;
+    return this._requestJson(
+      `/api/admin/assessors/${id}/reject`,
+      { method: 'PATCH', headers: this.getAuthHeaders() },
+      'Failed to reject assessor'
+    );
   },
 
   // --------------------------------------------------------------------------
   // Digital Skill Passport Credential APIs
   // --------------------------------------------------------------------------
   async verifyCredential(token) {
-    const response = await fetch(`${API_BASE_URL}/api/credentials/verify/${encodeURIComponent(token)}`, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' }
-    });
-    const data = await response.json();
-    return data;
+    return this._requestJson(
+      `/api/credentials/verify/${encodeURIComponent(token)}`,
+      { headers: { 'Accept': 'application/json' }, allowStatuses: [404] },
+      'Failed to verify credential'
+    );
   },
 
   async getWorkerCredentials(workerId = 101) {
-    const response = await fetch(`${API_BASE_URL}/api/worker/credentials?worker_id=${workerId}`, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' }
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to load credentials');
-    return data;
+    return this._requestJson(
+      `/api/worker/credentials?worker_id=${workerId}`,
+      { headers: { 'Accept': 'application/json' } },
+      'Failed to load credentials'
+    );
   },
 
   async getAdminCredentials() {
-    const response = await fetch(`${API_BASE_URL}/api/admin/credentials`, {
-      method: 'GET',
-      headers: this.getAuthHeaders()
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to load credentials');
-    return data;
+    return this._requestJson(
+      '/api/admin/credentials',
+      { headers: this.getAuthHeaders() },
+      'Failed to load credentials'
+    );
   },
 
   async issueAdminCredential(submissionId, skillLevel = '') {
-    const response = await fetch(`${API_BASE_URL}/api/admin/credentials/issue`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify({ submission_id: submissionId, skill_level: skillLevel })
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to issue credential');
-    return data;
+    return this._requestJson(
+      '/api/admin/credentials/issue',
+      { method: 'POST', headers: this.getAuthHeaders(), body: { submission_id: submissionId, skill_level: skillLevel } },
+      'Failed to issue credential'
+    );
   },
 
   async revokeAdminCredential(credentialId, reason) {
-    const response = await fetch(`${API_BASE_URL}/api/admin/credentials/${credentialId}/revoke`, {
-      method: 'PATCH',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify({ reason })
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to revoke credential');
-    return data;
+    return this._requestJson(
+      `/api/admin/credentials/${credentialId}/revoke`,
+      { method: 'PATCH', headers: this.getAuthHeaders(), body: { reason } },
+      'Failed to revoke credential'
+    );
   }
 };

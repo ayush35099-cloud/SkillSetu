@@ -42,8 +42,9 @@ export default function AdminAssessors() {
   const [revokingCredential, setRevokingCredential] = useState(null);
   const [revocationReason, setRevocationReason] = useState('');
 
-  // Admin login toggle for testing
-  const [adminPassword, setAdminPassword] = useState('Admin@123');
+  // Admin login state
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
   const [adminLoggingIn, setAdminLoggingIn] = useState(false);
 
   const fetchAssessors = async () => {
@@ -156,13 +157,17 @@ export default function AdminAssessors() {
 
   const handleAdminQuickLogin = async (e) => {
     e.preventDefault();
+    if (!adminEmail.trim() || !adminPassword) {
+      setError('Administrator email and password are required.');
+      return;
+    }
     setAdminLoggingIn(true);
     setError(null);
     try {
-      await apiService.adminLogin('admin@skillsetu.in', adminPassword);
+      await apiService.adminLogin(adminEmail.trim(), adminPassword);
       window.location.reload();
     } catch (err) {
-      setError(err.message || 'Admin login failed');
+      setError(err.message || 'Administrator sign-in failed');
     } finally {
       setAdminLoggingIn(false);
     }
@@ -229,12 +234,33 @@ export default function AdminAssessors() {
             You are currently logged in with an Assessor session. To issue official Digital Skill Passports or approve pending assessors, switch to the platform Administrator session.
           </p>
 
-          <form onSubmit={handleAdminQuickLogin} className="space-y-3 pt-2">
-            <div className="p-3 rounded-xl bg-sand-50 dark:bg-charcoal-900 border border-beige dark:border-charcoal-600 text-xs text-left">
-              <span className="font-bold text-teal dark:text-ivory">Demo Admin Credentials:</span>
-              <p className="text-[11px] text-greygreen dark:text-ivory/60 mt-0.5">
-                admin@skillsetu.in / Admin@123
-              </p>
+          <form onSubmit={handleAdminQuickLogin} className="space-y-3 pt-2 text-left">
+            <div>
+              <label className="block text-xs font-bold text-teal dark:text-ivory mb-1">
+                Administrator Email *
+              </label>
+              <input
+                type="email"
+                value={adminEmail}
+                onChange={(e) => setAdminEmail(e.target.value)}
+                placeholder="admin@organization.in"
+                required
+                className="w-full px-3.5 py-2.5 rounded-xl border border-beige dark:border-charcoal-600 bg-sand-50 dark:bg-charcoal-900 text-xs text-teal dark:text-ivory"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-teal dark:text-ivory mb-1">
+                Password *
+              </label>
+              <input
+                type="password"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                placeholder="Enter administrator password"
+                required
+                className="w-full px-3.5 py-2.5 rounded-xl border border-beige dark:border-charcoal-600 bg-sand-50 dark:bg-charcoal-900 text-xs text-teal dark:text-ivory"
+              />
             </div>
 
             <button
@@ -242,7 +268,7 @@ export default function AdminAssessors() {
               disabled={adminLoggingIn}
               className="w-full py-3 rounded-2xl bg-teal dark:bg-charcoal-700 hover:bg-teal-800 text-white font-bold text-xs shadow-sm transition-all"
             >
-              {adminLoggingIn ? 'Authenticating Admin...' : 'Log in as Demo Administrator'}
+              {adminLoggingIn ? 'Authenticating Administrator...' : 'Sign In as Administrator'}
             </button>
           </form>
         </div>

@@ -1,3 +1,4 @@
+import os
 from . import db
 from .models import (
     User,
@@ -669,7 +670,7 @@ def seed_database(app):
                 specialisation="electrician",
                 verification_status="approved"
             )
-            assessor.set_password("Assessor@123")
+            assessor.set_password(os.getenv("SEED_ASSESSOR_PASSWORD", "Assessor@123"))
             db.session.add(assessor)
             db.session.commit()
             app.logger.info("Demo approved assessor account created: assessor@skillsetu.in")
@@ -686,7 +687,7 @@ def seed_database(app):
                 specialisation="mason",
                 verification_status="pending"
             )
-            pending_assessor.set_password("Assessor@123")
+            pending_assessor.set_password(os.getenv("SEED_ASSESSOR_PASSWORD", "Assessor@123"))
             db.session.add(pending_assessor)
             db.session.commit()
             app.logger.info("Demo pending assessor account created: vikram.assessor@skillsetu.in")
@@ -703,12 +704,12 @@ def seed_database(app):
                 specialisation="administration",
                 verification_status="approved"
             )
-            admin.set_password("Admin@123")
+            admin.set_password(os.getenv("SEED_ADMIN_PASSWORD", "Admin@123"))
             db.session.add(admin)
             db.session.commit()
             app.logger.info("Demo admin account created: admin@skillsetu.in")
 
-        # 5. Seed Default Demo Workers (Ramesh Kumar, Suresh Patel, Kavita Devi)
+        # 5. Seed Default Demo Workers (Ramesh Kumar, Kavita Devi)
         worker_ramesh = User.query.filter_by(email="worker@skillsetu.in").first()
         if not worker_ramesh:
             worker_ramesh = User(
@@ -722,7 +723,7 @@ def seed_database(app):
                 specialisation="electrician",
                 verification_status="approved"
             )
-            worker_ramesh.set_password("Worker@123")
+            worker_ramesh.set_password(os.getenv("SEED_WORKER_PASSWORD", "Worker@123"))
             db.session.add(worker_ramesh)
             db.session.commit()
             app.logger.info("Demo worker account created: worker@skillsetu.in")
@@ -740,7 +741,7 @@ def seed_database(app):
                 specialisation="technician",
                 verification_status="approved"
             )
-            worker_kavita.set_password("Worker@123")
+            worker_kavita.set_password(os.getenv("SEED_WORKER_PASSWORD", "Worker@123"))
             db.session.add(worker_kavita)
             db.session.commit()
             app.logger.info("Demo worker account created: kavita.devi@skillsetu.in")
@@ -771,13 +772,13 @@ def seed_database(app):
 
                 # Submission 2: Suresh Patel (Pending)
                 sub2 = AssessmentSubmission(
-                    worker_id=worker_ramesh.id,
-                    worker_name=worker_ramesh.full_name,
-                    worker_phone=worker_ramesh.phone,
-                    worker_trade="electrician",
-                    worker_experience=worker_ramesh.years_of_experience,
-                    worker_location=worker_ramesh.location,
-                    task_id=elec_task.id,
+                    worker_id=102,
+                    worker_name="Suresh Patel",
+                    worker_phone="9812345678",
+                    worker_trade="plumber",
+                    worker_experience=5,
+                    worker_location="Ahmedabad, Gujarat",
+                    task_id=plumb_task.id,
                     evidence_url="https://images.pexels.com/photos/6419128/pexels-photo-6419128.jpeg",
                     evidence_type="image",
                     submission_notes="Assembled 1-inch CPVC hot and cold line loop with brass elbow fittings and CPVC solvent cement. Conducted 10-bar hydrostatic pressure holding test for 15 minutes without joint weeping.",
@@ -787,7 +788,7 @@ def seed_database(app):
 
                 # Submission 3: Mohd. Aslam (Under Review)
                 sub3 = AssessmentSubmission(
-                    worker_id=worker_ramesh.id,
+                    worker_id=103,
                     worker_name="Mohd. Aslam",
                     worker_phone="9845678901",
                     worker_trade="mason",
@@ -842,20 +843,33 @@ def seed_database(app):
                         )
                         db.session.add(res)
 
-                    # Seed initial verified Digital Skill Passport credential (Kavita Devi, ID #104)
-                    cred = SkillCredential(
-                        credential_id="SKILLSETU-2026-8842",
-                        verification_token="verify-kavita-devi-solarpv-2026",
-                        worker_id=sub4.worker_id,
-                        worker_name=sub4.worker_name,
-                        trade=sub4.worker_trade,
-                        skill_level="Master Craftsman (94.0%)",
-                        submission_id=sub4.id,
-                        review_id=review.id,
-                        issued_by_admin_id=admin.id,
-                        status="active"
-                    )
-                    db.session.add(cred)
-
                 db.session.commit()
-                app.logger.info("Sample submissions, review, and verified credential seeded successfully.")
+                app.logger.info("Sample submissions and review seeded successfully.")
+
+        # 7. Idempotently ensure verified sample SkillCredential exists (even on already-seeded DBs)
+        existing_cred = SkillCredential.query.filter(
+            (SkillCredential.verification_token == "verify-kavita-devi-solarpv-2026")
+            | (SkillCredential.credential_id == "SKILLSETU-2026-8842")
+        ).first()
+        if not existing_cred:
+            kavita_sub = AssessmentSubmission.query.filter_by(
+                worker_name="Kavita Devi",
+                status="approved"
+            ).first()
+            if kavita_sub and kavita_sub.reviews:
+                kavita_review = kavita_sub.reviews[0]
+                cred = SkillCredential(
+                    credential_id="SKILLSETU-2026-8842",
+                    verification_token="verify-kavita-devi-solarpv-2026",
+                    worker_id=kavita_sub.worker_id,
+                    worker_name=kavita_sub.worker_name,
+                    trade=kavita_sub.worker_trade or (kavita_sub.task.trade if kavita_sub.task else "technician"),
+                    skill_level="Master Craftsman (94.0%)",
+                    submission_id=kavita_sub.id,
+                    review_id=kavita_review.id,
+                    issued_by_admin_id=admin.id if admin else None,
+                    status="active"
+                )
+                db.session.add(cred)
+                db.session.commit()
+                app.logger.info("Seeded verified Digital Skill Passport credential SKILLSETU-2026-8842.")

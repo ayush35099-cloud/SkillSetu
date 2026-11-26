@@ -3,7 +3,9 @@ import secrets
 from datetime import datetime
 from flask import Blueprint, jsonify, request, current_app, g
 from sqlalchemy import text, desc
+from sqlalchemy.exc import SQLAlchemyError
 from . import db
+from .migrations import sanitize_db_error
 from .models import (
     User,
     AssessmentTask,
@@ -49,12 +51,22 @@ def root():
 
 @api_bp.route("/health", methods=["GET"])
 def health():
+    db_uri = current_app.config.get("SQLALCHEMY_DATABASE_URI")
+    if db_uri and not current_app.config.get("DB_INITIALIZED", False):
+        return jsonify({
+            "status": "unhealthy",
+            "service": "SkillSetu Backend",
+            "message": "Database initialization incomplete",
+            "timestamp": datetime.utcnow().isoformat()
+        }), 503
+
     return jsonify({
         "status": "healthy",
         "service": "SkillSetu Backend",
         "phase": "Phase 3 – Assessor Portal & Evaluation Engine",
         "timestamp": datetime.utcnow().isoformat()
     }), 200
+
 
 @api_bp.route("/health/db", methods=["GET"])
 def health_db():
@@ -67,22 +79,29 @@ def health_db():
             "message": "DATABASE_URL is not configured"
         }), 200
 
+    db_label = "PostgreSQL" if "postgresql" in (db_uri or "") else "SQLite"
     try:
         with db.engine.connect() as connection:
             connection.execute(text("SELECT 1"))
-            
-        db_type = "PostgreSQL" if "postgresql" in (db_uri or "") else "SQLite (Local Dev)"
+
+        if not current_app.config.get("DB_INITIALIZED", False):
+            return jsonify({
+                "status": "error",
+                "database": db_label,
+                "message": "Database schema initialization failed"
+            }), 503
+
         return jsonify({
             "status": "connected",
-            "database": "PostgreSQL" if "postgresql" in (db_uri or "") else "SQLite",
+            "database": db_label,
             "message": "Database connection successful",
             "timestamp": datetime.utcnow().isoformat()
         }), 200
     except Exception as e:
-        current_app.logger.error(f"Database health check failed: {e}")
+        current_app.logger.error(f"Database health check failed: {sanitize_db_error(e)}")
         return jsonify({
             "status": "error",
-            "database": "PostgreSQL" if "postgresql" in (db_uri or "") else "SQLite",
+            "database": db_label,
             "message": "Database connection failed"
         }), 503
 
@@ -157,11 +176,11 @@ def assessor_register():
     }), 201
 
 
-@auth_bp.route("/assessor/login", methods=["POST"])
-def assessor_login():
-    data = request.get_json() or {}
-    email = data.get("email", "").strip().lower()
-    password = data.get("password", "")
+def _authenticate_login(allowed_roles, invalid_msg, role_error_fn, success_msg):
+    """Shared credential verification flow with safe SQLAlchemy error handling."""
+    data = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
 
     if not email or not password:
         return jsonify({
@@ -169,58 +188,54 @@ def assessor_login():
             "message": "Email and password are required."
         }), 400
 
-    user = User.query.filter_by(email=email).first()
+    try:
+        user = User.query.filter_by(email=email).first()
+    except SQLAlchemyError as exc:
+        current_app.logger.error(f"Authentication query failed: {sanitize_db_error(exc)}")
+        return jsonify({
+            "status": "error",
+            "message": "Authentication service temporarily unavailable. Please try again shortly."
+        }), 503
 
     if not user or not user.check_password(password):
         return jsonify({
             "status": "error",
-            "message": "Invalid email address or password."
+            "message": invalid_msg
         }), 401
 
-    if user.role not in ["assessor", "admin"]:
+    if allowed_roles and user.role not in allowed_roles:
         return jsonify({
             "status": "error",
-            "message": f"Account with role '{user.role}' cannot log into the Assessor Portal."
+            "message": role_error_fn(user.role)
         }), 403
 
     token = generate_token(user.id, user.role)
-
     return jsonify({
         "status": "success",
-        "message": "Login successful.",
+        "message": success_msg,
         "token": token,
         "user": user.to_dict()
     }), 200
+
+
+@auth_bp.route("/assessor/login", methods=["POST"])
+def assessor_login():
+    return _authenticate_login(
+        allowed_roles=["assessor", "admin"],
+        invalid_msg="Invalid email address or password.",
+        role_error_fn=lambda r: f"Account with role '{r}' cannot log into the Assessor Portal.",
+        success_msg="Login successful.",
+    )
 
 
 @auth_bp.route("/admin/login", methods=["POST"])
 def admin_login():
-    data = request.get_json() or {}
-    email = data.get("email", "").strip().lower()
-    password = data.get("password", "")
-
-    user = User.query.filter_by(email=email).first()
-
-    if not user or not user.check_password(password):
-        return jsonify({
-            "status": "error",
-            "message": "Invalid administrator credentials."
-        }), 401
-
-    if user.role != "admin":
-        return jsonify({
-            "status": "error",
-            "message": "Access restricted. Administrator privileges required."
-        }), 403
-
-    token = generate_token(user.id, user.role)
-
-    return jsonify({
-        "status": "success",
-        "message": "Admin login successful.",
-        "token": token,
-        "user": user.to_dict()
-    }), 200
+    return _authenticate_login(
+        allowed_roles=["admin"],
+        invalid_msg="Invalid administrator credentials.",
+        role_error_fn=lambda _r: "Access restricted. Administrator privileges required.",
+        success_msg="Admin login successful.",
+    )
 
 
 @auth_bp.route("/worker/register", methods=["POST"])
@@ -291,69 +306,23 @@ def worker_register():
 
 @auth_bp.route("/worker/login", methods=["POST"])
 def worker_login():
-    data = request.get_json() or {}
-    email = data.get("email", "").strip().lower()
-    password = data.get("password", "")
-
-    if not email or not password:
-        return jsonify({
-            "status": "error",
-            "message": "Email and password are required."
-        }), 400
-
-    user = User.query.filter_by(email=email).first()
-
-    if not user or not user.check_password(password):
-        return jsonify({
-            "status": "error",
-            "message": "Invalid email address or password."
-        }), 401
-
-    if user.role not in ["worker", "admin"]:
-        return jsonify({
-            "status": "error",
-            "message": f"Account with role '{user.role}' cannot log into the Worker Portal."
-        }), 403
-
-    token = generate_token(user.id, user.role)
-
-    return jsonify({
-        "status": "success",
-        "message": "Worker login successful.",
-        "token": token,
-        "user": user.to_dict()
-    }), 200
+    return _authenticate_login(
+        allowed_roles=["worker", "admin"],
+        invalid_msg="Invalid email address or password.",
+        role_error_fn=lambda r: f"Account with role '{r}' cannot log into the Worker Portal.",
+        success_msg="Worker login successful.",
+    )
 
 
 @auth_bp.route("/login", methods=["POST"])
 def universal_login():
     """Universal login endpoint supporting workers, assessors, and admins."""
-    data = request.get_json() or {}
-    email = data.get("email", "").strip().lower()
-    password = data.get("password", "")
-
-    if not email or not password:
-        return jsonify({
-            "status": "error",
-            "message": "Email and password are required."
-        }), 400
-
-    user = User.query.filter_by(email=email).first()
-
-    if not user or not user.check_password(password):
-        return jsonify({
-            "status": "error",
-            "message": "Invalid email address or password."
-        }), 401
-
-    token = generate_token(user.id, user.role)
-
-    return jsonify({
-        "status": "success",
-        "message": "Login successful.",
-        "token": token,
-        "user": user.to_dict()
-    }), 200
+    return _authenticate_login(
+        allowed_roles=None,
+        invalid_msg="Invalid email address or password.",
+        role_error_fn=lambda r: f"Role '{r}' is not permitted.",
+        success_msg="Login successful.",
+    )
 
 
 @auth_bp.route("/me", methods=["GET"])
@@ -1100,7 +1069,7 @@ def issue_credential():
         verification_token=token,
         worker_id=submission.worker_id,
         worker_name=submission.worker_name,
-        trade=submission.trade or submission.worker_trade,
+        trade=(submission.task.trade if submission.task else None) or submission.worker_trade or "general",
         skill_level=data.get("skill_level") or skill_tier,
         submission_id=submission.id,
         review_id=latest_review.id,
