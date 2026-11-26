@@ -37,6 +37,11 @@ class Config:
 
     SQLALCHEMY_DATABASE_URI = raw_db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = (
+        {"pool_pre_ping": True, "pool_recycle": 240}
+        if raw_db_url and raw_db_url.startswith("postgresql")
+        else {}
+    )
     
     # CORS allowed origins
     cors_env = os.getenv("CORS_ORIGINS", "*")
