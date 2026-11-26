@@ -26,8 +26,18 @@
 │ • Worker Experience Portal & Responsive Navigation ........... 100% OK │
 │ • Dynamic Profile Completion Calculation ..................... 100% OK │
 │ • Verifiable Digital Skill Passport ............ Prototype (Demo State)│
-│ • Practical Assessment Simulator ............... Prototype (Demo State)│
-│ • Role-Based Portal Gating (Contractor & Assessor) ........... 100% OK │
+│ • Role-Based Portal Gating (Contractor) ...................... 100% OK │
+├────────────────────────────────────────────────────────────────────────┤
+│                      PHASE 3 DELIVERABLE AUDIT                         │
+├────────────────────────────────────────────────────────────────────────┤
+│ • Assessor & Admin PostgreSQL Data Models .................... 100% OK │
+│ • Token Authentication & Admin Approval Guard ................ 100% OK │
+│ • 16 Tasks across 8 Trades + 64 Rubrics Seeded ............... 100% OK │
+│ • Real Assessor Evaluation & Scoring REST APIs ............... 100% OK │
+│ • Complete React Assessor Portal (Dashboard, Queue, Review) .. 100% OK │
+│ • Admin Assessor Approval Hub ................................ 100% OK │
+│ • Worker Portal Live PostgreSQL Evaluation Integration ....... 100% OK │
+│ • Automated Phase 3 Integration Test Suite (8/8 Passed) ...... 100% OK │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -101,8 +111,23 @@
 | **Dynamic Completion Metric** | `frontend/src/services/demoWorkerService.js` (`calculateCompletionPercentage`) | Dynamically calculates profile completeness (0–100%) by inspecting actual populated profile fields (personal info, trade details, documents, skills). Replaced previous hardcoded 75%. | ✅ VERIFIED |
 | **Interactive Worker Profile** | `frontend/src/pages/worker/WorkerProfile.jsx` | Full editing of contact details, trade experience, tools owned, and verified skills with instant calculation updates and `localStorage` persistence. | ✅ VERIFIED |
 | **Digital Skill Passport Prototype** | `frontend/src/pages/worker/WorkerPassport.jsx` | Displays worker credential preview with explicit banner: *"DEMO PREVIEW – NOT A VALID CREDENTIAL"*, labeled non-functional QR code, and transparent disclosure. | 🟡 PROTOTYPE |
-| **Assessment Simulator** | `frontend/src/pages/worker/WorkerSkills.jsx` | Interactive task benchmark inspection and evidence submission modal with explicit Phase 3 prototype disclaimers. | 🟡 PROTOTYPE |
-| **Role-Based Gating** | `frontend/src/components/LoginModal.jsx` | Worker role navigates to the interactive demo portal; Contractor, Assessor, and Admin selections display informative modal notices stating they are scheduled for future phases. | ✅ VERIFIED |
+| **Assessment Benchmarks & Submissions** | `frontend/src/pages/worker/WorkerSkills.jsx` | Real backend task loader, standardized rubric viewer, live submission modal with video/image proof, and resubmission handler. | ✅ VERIFIED |
+| **Role-Based Gating** | `frontend/src/components/LoginModal.jsx` | Worker navigates to worker portal; Assessor navigates to `/assessor`; Admin navigates to `/assessor/admin`; Contractor displays informative Phase 4 modal notice. | ✅ VERIFIED |
+
+---
+
+### 7. Assessor Portal & Practical Evaluation Engine (Phase 3)
+
+| Requirement | Code Location | Observed Behavior | Status |
+|:---|:---|:---|:---:|
+| **PostgreSQL Relational Models** | `backend/app/models.py` | 6 relational models: `User`, `AssessmentTask`, `AssessmentRubric`, `AssessmentSubmission`, `AssessmentReview`, `AssessmentCriterionResult` with foreign keys, timestamps, cascades. | ✅ VERIFIED |
+| **Cryptographic Token Auth** | `backend/app/auth.py` | Timed serialization tokens with salt (`URLSafeTimedSerializer`). Decorator `@require_auth(allowed_roles=['assessor', 'admin'], require_approved=True)` blocks unapproved assessors with HTTP 403 `ASSESSOR_NOT_APPROVED`. | ✅ VERIFIED |
+| **16 Practical Tasks & 64 Rubrics** | `backend/app/seeds.py` | 16 tasks across all 8 trades (Electrician, Plumber, Mason, Carpenter, Welder, Painter, Mechanic, Technician), 4 criteria each with max scores and weights. Full adherence to safety standards. | ✅ VERIFIED |
+| **Assessor REST APIs** | `backend/app/routes.py` | Full suite: `POST /api/auth/assessor/register`, `POST /api/auth/assessor/login`, `GET /api/tasks`, `GET /api/assessor/dashboard`, `GET /api/assessor/submissions`, `POST /api/assessor/submissions/<id>/review`, `GET /api/assessor/history`, `GET /api/assessor/profile`. | ✅ VERIFIED |
+| **Admin Assessor Management** | `backend/app/routes.py`, `frontend/src/pages/assessor/AdminAssessors.jsx` | `GET /api/admin/assessors`, `PATCH /api/admin/assessors/<id>/approve`, `PATCH /api/admin/assessors/<id>/reject` with admin-only auth. | ✅ VERIFIED |
+| **Assessor Evaluation Interface** | `frontend/src/pages/assessor/AssessorReview.jsx` | 2-column layout with worker info, demonstration media player, 4-step rubric scoring inputs, live composite percentage calculation, decision selector, overall feedback, and atomic backend submission. | ✅ VERIFIED |
+| **Worker Portal Live PostgreSQL Link** | `frontend/src/pages/worker/WorkerDashboard.jsx` | Loads live submissions from `/api/worker/assessments`, shows verified assessor score, evaluation decision badge, assessor feedback, and resubmit button. | ✅ VERIFIED |
+| **Automated Test Suite** | `backend/tests/test_phase3.py` | 8/8 comprehensive unit and integration tests passing in 3.32s covering registration, approval gate, rubric scoring validation, and worker resubmission. | ✅ VERIFIED |
 
 ---
 

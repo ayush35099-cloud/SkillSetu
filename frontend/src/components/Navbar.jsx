@@ -13,7 +13,8 @@ import {
   Briefcase, 
   User, 
   ArrowRight,
-  MapPin
+  MapPin,
+  ClipboardCheck
 } from 'lucide-react';
 
 export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) {
@@ -24,6 +25,7 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
   const navigate = useNavigate();
 
   const isWorkerPortal = location.pathname.startsWith('/worker');
+  const isAssessorPortal = location.pathname.startsWith('/assessor');
   const isHome = location.pathname === '/';
 
   const handleNavAnchor = (e, anchorId) => {
@@ -113,6 +115,19 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
               {isWorkerPortal && (
                 <span className="w-1.5 h-1.5 rounded-full bg-terracotta animate-pulse" />
               )}
+            </Link>
+
+            {/* Assessor Portal Link */}
+            <Link
+              to="/assessor"
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                isAssessorPortal
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-200/80 dark:border-amber-800/40'
+              }`}
+            >
+              <ClipboardCheck className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+              <span>Assessor Portal</span>
             </Link>
 
             <a 
@@ -260,6 +275,23 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
               </div>
               <span className="text-xs bg-terracotta/20 text-terracotta px-2 py-0.5 rounded-full font-bold">
                 Active
+              </span>
+            </Link>
+            <Link
+              to="/assessor"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`px-3 py-2.5 rounded-xl text-sm font-bold flex items-center justify-between transition-colors ${
+                isAssessorPortal 
+                  ? 'bg-amber-600 text-white' 
+                  : 'text-teal dark:text-ivory hover:bg-beige/40 dark:hover:bg-charcoal-800'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <ClipboardCheck className="w-4 h-4 text-amber-500" />
+                <span>Assessor Portal</span>
+              </div>
+              <span className="text-xs bg-amber-500/20 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full font-bold">
+                Phase 3 Live
               </span>
             </Link>
             <a

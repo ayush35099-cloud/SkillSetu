@@ -25,13 +25,19 @@ export default function LoginModal({ isOpen, onClose }) {
 
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
-    setShowRoleNotice(role !== 'worker');
+    setShowRoleNotice(role === 'contractor');
   };
 
   const handleContinue = () => {
     if (selectedRole === 'worker') {
       onClose();
       navigate('/worker');
+    } else if (selectedRole === 'assessor') {
+      onClose();
+      navigate('/assessor');
+    } else if (selectedRole === 'admin') {
+      onClose();
+      navigate('/assessor/admin');
     } else {
       setShowRoleNotice(true);
     }
@@ -41,10 +47,6 @@ export default function LoginModal({ isOpen, onClose }) {
     switch (selectedRole) {
       case 'contractor':
         return 'Contractor Portal: Scheduled for Phase 4';
-      case 'assessor':
-        return 'Assessor Portal: Scheduled for Phase 3';
-      case 'admin':
-        return 'Admin Portal: Scheduled for Future Phase';
       default:
         return '';
     }
@@ -53,11 +55,7 @@ export default function LoginModal({ isOpen, onClose }) {
   const getRoleNoticeBody = () => {
     switch (selectedRole) {
       case 'contractor':
-        return 'Contractor onboarding and instant digital skill passport verification will activate in Phase 4. For now, please test the platform using the Worker Demo Portal.';
-      case 'assessor':
-        return 'Standardized assessment rubrics and practical video grading tools will activate in Phase 3. Please explore the Worker Portal.';
-      case 'admin':
-        return 'Administrative management, institutional verification, and municipal workforce governance tools are scheduled for future development phases. Please use the Worker Demo Portal.';
+        return 'Contractor onboarding and instant digital skill passport verification will activate in Phase 4. For now, please test the platform using the Worker or Assessor Portals.';
       default:
         return '';
     }
@@ -181,12 +179,12 @@ export default function LoginModal({ isOpen, onClose }) {
                   <h3 className="text-sm font-bold text-teal dark:text-ivory font-heading">
                     {t('loginModal.assessorOption', 'I am a Vocational Assessor')}
                   </h3>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sand-200 dark:bg-charcoal-700 text-greygreen dark:text-ivory/60">
-                    Phase 3
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                    Phase 3 Live
                   </span>
                 </div>
                 <p className="text-xs text-greygreen dark:text-ivory/60 mt-0.5 leading-relaxed">
-                  {t('loginModal.assessorOptionDesc', 'Review practical test videos against standardized occupational rubrics.')}
+                  Review practical trade demonstrations against standardized rubrics stored in PostgreSQL.
                 </p>
               </div>
             </div>
@@ -208,19 +206,19 @@ export default function LoginModal({ isOpen, onClose }) {
                   <h3 className="text-sm font-bold text-teal dark:text-ivory font-heading">
                     {t('loginModal.adminOption', 'Platform Administrator')}
                   </h3>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sand-200 dark:bg-charcoal-700 text-greygreen dark:text-ivory/60">
-                    Future Phase
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                    Approval Hub
                   </span>
                 </div>
                 <p className="text-xs text-greygreen dark:text-ivory/60 mt-0.5 leading-relaxed">
-                  Institutional governance, credential revocation, and municipal workforce compliance.
+                  Verify assessor credentials, approve new evaluators, and manage platform compliance.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Role Status Notice for Contractor / Assessor / Admin */}
-          {selectedRole !== 'worker' && (
+          {/* Role Status Notice for Contractor */}
+          {selectedRole === 'contractor' && (
             <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5 mb-5 animate-fadeIn">
               <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               <div className="leading-relaxed">
@@ -238,7 +236,7 @@ export default function LoginModal({ isOpen, onClose }) {
           <div className="p-3 rounded-xl bg-teal-50/80 dark:bg-charcoal-800 border border-teal-200/60 dark:border-charcoal-700 text-teal-900 dark:text-ivory/80 text-xs flex items-start gap-2.5 mb-5">
             <Info className="w-4 h-4 text-teal dark:text-ivory/60 shrink-0 mt-0.5" />
             <p className="leading-relaxed">
-              {t('loginModal.authNotice', 'Authentication is currently in Demo Evaluation Mode. Real mobile OTP and voice login will be integrated in future phases.')}
+              {t('loginModal.authNotice', 'Authentication is integrated with PostgreSQL. Assessor demo accounts and Admin credentials are pre-configured.')}
             </p>
           </div>
 
@@ -250,6 +248,24 @@ export default function LoginModal({ isOpen, onClose }) {
               className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-terracotta hover:bg-terracotta-600 text-white font-bold text-sm shadow-md shadow-terracotta/20 transition-all transform active:scale-[0.98]"
             >
               <span>{t('loginModal.demoWorkerBtn', 'Enter Worker Demo Portal')}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : selectedRole === 'assessor' ? (
+            <button
+              type="button"
+              onClick={handleContinue}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-teal hover:bg-teal-800 text-white font-bold text-sm shadow-md shadow-teal/20 transition-all transform active:scale-[0.98]"
+            >
+              <span>Enter Assessor Portal (Phase 3)</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : selectedRole === 'admin' ? (
+            <button
+              type="button"
+              onClick={handleContinue}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-md shadow-amber-600/20 transition-all transform active:scale-[0.98]"
+            >
+              <span>Enter Admin Approval Hub</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           ) : (

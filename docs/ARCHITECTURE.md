@@ -223,6 +223,84 @@ def health_db():
         }), 503
 ```
 
+### 4. Phase 3 PostgreSQL Relational Schema & Assessor Engine
+
+Phase 3 introduces a normalized PostgreSQL evaluation schema:
+
+```mermaid
+erDiagram
+    User ||--o{ AssessmentReview : performs
+    AssessmentTask ||--|{ AssessmentRubric : contains
+    AssessmentTask ||--o{ AssessmentSubmission : receives
+    AssessmentSubmission ||--o| AssessmentReview : evaluated_by
+    AssessmentReview ||--|{ AssessmentCriterionResult : scores
+    AssessmentRubric ||--o{ AssessmentCriterionResult : defines
+
+    User {
+        int id PK
+        string email UK
+        string password_hash
+        string full_name
+        string role "assessor | admin | worker"
+        string verification_status "pending | approved | rejected"
+        string trade_specialisation
+        int experience_years
+        datetime created_at
+    }
+
+    AssessmentTask {
+        int id PK
+        string trade "electrician | plumber | mason | etc."
+        string title
+        text description
+        string difficulty "Basic | Intermediate | Advanced"
+        text safety_instructions
+        text required_tools
+        datetime created_at
+    }
+
+    AssessmentRubric {
+        int id PK
+        int task_id FK
+        string criterion_name
+        text description
+        int max_score
+        float weight
+        int display_order
+    }
+
+    AssessmentSubmission {
+        int id PK
+        int worker_id
+        string worker_name
+        int task_id FK
+        string evidence_url
+        string evidence_type "video | image"
+        string status "pending | under_review | approved | rejected | resubmission_requested"
+        text notes
+        datetime submitted_at
+    }
+
+    AssessmentReview {
+        int id PK
+        int submission_id FK
+        int assessor_id FK
+        int total_score
+        int max_score
+        text overall_feedback
+        string decision "approved | rejected | resubmission_requested"
+        datetime reviewed_at
+    }
+
+    AssessmentCriterionResult {
+        int id PK
+        int review_id FK
+        int rubric_id FK
+        int score
+        text assessor_comment
+    }
+```
+
 ---
 
 ## 🚀 Deployment Pipeline & CI/CD Flow

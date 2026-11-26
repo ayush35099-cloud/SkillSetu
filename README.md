@@ -57,6 +57,8 @@ SkillSetu is entered under **Track 4 – UnlockED: Unlocking Educational Potenti
 |:---|:---|:---:|:---|
 | **Production Frontend (SPA)** | GitHub Pages | Active | [https://ayush35099-cloud.github.io/SkillSetu/](https://ayush35099-cloud.github.io/SkillSetu/) |
 | **Worker Portal (Interactive Demo)** | GitHub Pages | Active | [https://ayush35099-cloud.github.io/SkillSetu/worker](https://ayush35099-cloud.github.io/SkillSetu/worker) |
+| **Assessor Portal (Phase 3)** | GitHub Pages | Active | [https://ayush35099-cloud.github.io/SkillSetu/assessor](https://ayush35099-cloud.github.io/SkillSetu/assessor) |
+| **Admin Assessor Hub (Phase 3)** | GitHub Pages | Active | [https://ayush35099-cloud.github.io/SkillSetu/assessor/admin](https://ayush35099-cloud.github.io/SkillSetu/assessor/admin) |
 | **Backend REST API** | Render (Free Tier) | Active | [https://skillsetu-backend-47ww.onrender.com](https://skillsetu-backend-47ww.onrender.com) |
 | **Backend Service Health Probe** | Render | Active | [https://skillsetu-backend-47ww.onrender.com/api/health](https://skillsetu-backend-47ww.onrender.com/api/health) |
 | **Database Connectivity Probe** | Render PostgreSQL | Active | [https://skillsetu-backend-47ww.onrender.com/api/health/db](https://skillsetu-backend-47ww.onrender.com/api/health/db) |
@@ -125,9 +127,14 @@ We are committed to absolute transparency regarding what is implemented, what is
 | **Dynamic Profile Completion Metric** | 2 | ✅ Implemented | Dynamic calculation based on completed profile fields (`demoWorkerService.js`) |
 | **Worker Profile Management** | 2 | ✅ Implemented | Interactive editing with local state persistence (`src/pages/worker/WorkerProfile.jsx`) |
 | **Digital Skill Passport** | 2 | 🟡 Prototype (Demo State) | Visual credential layout with explicit demo disclaimers & non-functional QR code |
-| **Practical Assessment Simulator** | 2 | 🟡 Prototype (Demo State) | Task submission UI with simulated upload & client-side status tracking |
+| **Practical Assessment Task Engine** | 3 | ✅ Implemented | 16 standardized practical assessment tasks across 8 trades stored in PostgreSQL (`backend/app/models.py`) |
+| **Occupational Rubrics (4 Criteria/Task)** | 3 | ✅ Implemented | 64 weighted rubric benchmarks with strict score validation (`backend/app/seeds.py`) |
+| **Assessor Cryptographic Authentication** | 3 | ✅ Implemented | Token-based auth (`URLSafeTimedSerializer`) with admin verification gate (`backend/app/auth.py`) |
+| **Assessor Portal & Evaluation Suite** | 3 | ✅ Implemented | Queue, video/photo demonstration inspector, rubric grading, decision engine (`frontend/src/pages/assessor/`) |
+| **Admin Assessor Verification Hub** | 3 | ✅ Implemented | Administrative reviewer approving/rejecting accredited evaluators (`AdminAssessors.jsx`) |
+| **Worker Dashboard Live Assessment Sync** | 3 | ✅ Implemented | Live PostgreSQL evaluation status, composite scores, and assessor feedback (`WorkerDashboard.jsx`) |
 | **Job Opportunities Board** | 2 | 🟡 Prototype (Demo State) | Filterable trade opportunity listings with instant application simulator |
-| **Contractor, Assessor & Admin Portals** | 3–4 | ⏳ Planned | Clean informational coming-soon modal notices in `LoginModal.jsx` |
+| **Contractor Portal** | 4 | ⏳ Planned | Direct contractor hiring, verified candidate matching, and escrow-backed milestones |
 | **Live AI Video Evaluation (Gemini)** | 6 | ⏳ Planned | Computer vision analysis of uploaded trade technique videos |
 | **Bidirectional Voice AI (Gemini Live)** | 5 | ⏳ Planned | Real-time speech-to-speech conversational assistant for unlettered workers |
 

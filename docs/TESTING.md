@@ -42,6 +42,26 @@ python -c "from app import create_app; app = create_app(); print('Flask app fact
 #### Expected Outcome:
 - Returns `Flask app factory initialized successfully.` with return code `0`.
 
+### Backend Phase 3 Automated Test Suite
+Run the Phase 3 practical evaluation and assessor portal test suite:
+
+```bash
+cd backend
+python -m unittest tests/test_phase3.py -v
+```
+
+#### Expected Outcome:
+- Executes 8 unit tests in < 4 seconds:
+  1. `test_01_health_endpoints`: Verifies `/api/health` and `/api/health/db`.
+  2. `test_02_task_and_rubric_seeding`: Verifies 16 tasks across all 8 trades and 64 rubrics stored in DB.
+  3. `test_03_assessor_registration_and_login`: Verifies token auth and default pending status.
+  4. `test_04_unapproved_assessor_restriction`: Enforces 403 HTTP error on review attempts before admin approval.
+  5. `test_05_admin_assessor_approval`: Confirms admin can approve assessors.
+  6. `test_06_assessor_review_and_scoring`: Tests score computation, rubric criteria results, and atomic commit.
+  7. `test_07_invalid_score_rejection`: Enforces strict validation rejecting scores exceeding max_score.
+  8. `test_08_worker_submission_and_resubmission`: Verifies worker submit and resubmit loops.
+- Reports `Ran 8 tests in ~3.3s ... OK`.
+
 ---
 
 ## 🌐 2. Cloud Health Endpoint Testing

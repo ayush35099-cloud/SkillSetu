@@ -15,6 +15,16 @@ import WorkerDashboard from './pages/worker/WorkerDashboard';
 import WorkerProfile from './pages/worker/WorkerProfile';
 import WorkerSkills from './pages/worker/WorkerSkills';
 import SkillPassport from './pages/worker/SkillPassport';
+import AssessorAuthGuard from './components/assessor/AssessorAuthGuard';
+import AssessorLayout from './components/assessor/AssessorLayout';
+import AssessorDashboard from './pages/assessor/AssessorDashboard';
+import AssessorSubmissions from './pages/assessor/AssessorSubmissions';
+import AssessorReview from './pages/assessor/AssessorReview';
+import AssessorHistory from './pages/assessor/AssessorHistory';
+import AssessorProfile from './pages/assessor/AssessorProfile';
+import AdminAssessors from './pages/assessor/AdminAssessors';
+import AssessorLogin from './pages/assessor/AssessorLogin';
+import AssessorRegister from './pages/assessor/AssessorRegister';
 import { apiService } from './services/api';
 
 function AppContent() {
@@ -104,6 +114,27 @@ function AppContent() {
             <Route path="profile" element={<WorkerProfile />} />
             <Route path="skills" element={<WorkerSkills />} />
             <Route path="passport" element={<SkillPassport />} />
+          </Route>
+
+          {/* Dedicated Assessor Portal Public Auth Routes */}
+          <Route path="/assessor/login" element={<AssessorLogin />} />
+          <Route path="/assessor/register" element={<AssessorRegister />} />
+
+          {/* Protected Assessor Portal Experience Routes */}
+          <Route
+            path="/assessor"
+            element={
+              <AssessorAuthGuard>
+                <AssessorLayout />
+              </AssessorAuthGuard>
+            }
+          >
+            <Route index element={<AssessorDashboard />} />
+            <Route path="submissions" element={<AssessorSubmissions />} />
+            <Route path="review/:id" element={<AssessorReview />} />
+            <Route path="history" element={<AssessorHistory />} />
+            <Route path="profile" element={<AssessorProfile />} />
+            <Route path="admin" element={<AdminAssessors />} />
           </Route>
 
           {/* Fallback to Home */}

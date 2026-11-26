@@ -30,6 +30,11 @@ class Config:
     if raw_db_url and raw_db_url.startswith("postgres://"):
         raw_db_url = raw_db_url.replace("postgres://", "postgresql://", 1)
         
+    # In local development without DATABASE_URL, fallback to sqlite
+    # In production (Render), DATABASE_URL is always provided
+    if not raw_db_url and os.getenv("FLASK_ENV") != "production" and not os.getenv("RENDER"):
+        raw_db_url = "sqlite:///skillsetu_dev.db"
+
     SQLALCHEMY_DATABASE_URI = raw_db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     

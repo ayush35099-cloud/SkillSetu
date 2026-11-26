@@ -70,27 +70,35 @@
 
 ---
 
-### Phase 3: Practical Assessor Portal & Rubrics (Next Up)
-- **Objective**: Build the dedicated portal and evaluation rubric engine for certified master craftspeople and vocational instructors to review practical assessments.
-- **Key Deliverables**:
-  - **Assessor Identity & Onboarding**:
-    - Role-based authentication (JWT or OAuth) for verified trade assessors.
-    - Accreditation profile (ITI instructor, master artisan, contractor supervisor).
-  - **Standardized Practical Rubrics for 8 Trades**:
-    - Electrician: Conduit pulling, distribution board wiring, grounding/earthing check, continuity testing.
-    - Plumber: CPVC/UPVC line pressure testing, trap installation, leak inspection, slope alignment.
-    - Mason: Plumb line accuracy, mortar mix consistency, brick bonding, surface leveling.
-    - Carpenter: Joinery precision (mortise and tenon), wood moisture treatment, squareness alignment.
-    - Welder: Seam uniformity, penetration depth, slag removal, weld bead integrity.
-    - Painter: Surface preparation (putty sanding), primer application, uniform coat coverage, edge cutting.
-    - Mechanic: Diagnostic troubleshooting, torque specification compliance, fluid replacement safety.
-    - Other Trades: Customizable vocational assessment criteria.
-  - **Evidence Review Workspace**:
-    - Multi-media viewer (high-resolution photo inspection with zoom, video timestamp scrubbing).
-    - Rubric-based point scoring (Safety, Technique, Tool Handling, Finished Quality).
-  - **Grading & Accreditation Engine**:
-    - Tier computation: *Master Craftsman* (90%+), *Skilled* (75–89%), *Semi-Skilled* (60–74%), *Apprentice* (< 60%).
-    - Automated feedback generation in the worker's selected language.
+### Phase 3: Practical Assessor Portal & Rubrics (Completed)
+- **Status**: ✅ **COMPLETED**
+- **Objective**: Build the dedicated portal, cryptographic authentication, and evaluation rubric engine for certified master craftspeople and vocational instructors to review practical assessments.
+- **Implemented Deliverables**:
+  - **Assessor Identity & Security**:
+    - Cryptographic URL-safe token authentication (`URLSafeTimedSerializer`).
+    - Assessor registration and qualification capture (ITI/diploma, trade, experience).
+    - Administrative approval gateway (`@require_auth(allowed_roles=['assessor'], require_approved=True)`) preventing unapproved assessors from submitting binding reviews.
+  - **Standardized Practical Rubrics for 8 Trades Stored in PostgreSQL**:
+    - 16 practical tasks with 4 weighted criteria each (64 criteria total):
+      - Electrician: Conduit Wiring & MCB Sizing, 3-Phase Motor Starter Setup (Strict de-energized safety).
+      - Plumber: CPVC/UPVC Pipeline Pressure Testing, Drainage Trap & Sanitary Fixture Setup.
+      - Mason: 9-inch Brickwork with Mortar Consistency, Precision Surface Plastering & Plumb Alignment.
+      - Carpenter: Mortise and Tenon Woodworking Joint, Door Frame Fitting & Leveling.
+      - Welder: Multi-Pass Butt Joint Shielded Metal Arc Welding, Fillet Weld T-Joint.
+      - Painter: Wall Putty Surface Smoothing, Exterior Weatherproof Primer & Double Coat Application.
+      - Mechanic: Four-Stroke Engine Valve Clearance & Oil Filter Service, Disc Brake Pad Replacement.
+      - Technician: Inverter PCB Component Inspection & Soldering, Solar PV Panel String Voltage Testing.
+  - **Assessor Evaluation Suite (`/assessor/*`)**:
+    - Live dashboard with metric cards, pending approval alert, and quick action cards.
+    - Submissions queue with trade/status filtering and search.
+    - 2-column evaluation interface with evidence video/photo inspector, interactive criterion scoring, live composite percentage calculation, Approve/Reject/Resubmit decision selector, and atomic PostgreSQL commit.
+    - Historical review audit log and accreditation profile editor.
+    - Admin verification panel (`/assessor/admin`) for approving/rejecting evaluators.
+  - **Worker Experience Integration**:
+    - Worker Dashboard connected to live PostgreSQL submissions endpoint (`/api/worker/assessments`).
+    - Worker Skills page equipped with real practical task loader and evidence submission modal.
+  - **Automated Test Suite**:
+    - 8 unit and integration tests passing in `backend/tests/test_phase3.py`.
 
 ---
 

@@ -7,6 +7,7 @@ import {
   calculateProfileCompletion, 
   getAssessmentStats 
 } from '../../services/demoWorkerService';
+import { apiService } from '../../services/api';
 import { 
   CheckCircle2, 
   Clock, 
@@ -38,6 +39,25 @@ export default function WorkerDashboard() {
   const [profile, setProfile] = useState(() => getWorkerProfile());
   const [completion, setCompletion] = useState(() => calculateProfileCompletion(profile));
   const [stats, setStats] = useState(() => getAssessmentStats(profile));
+  const [liveAssessments, setLiveAssessments] = useState([]);
+  const [loadingAssessments, setLoadingAssessments] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    apiService.getWorkerAssessments(101)
+      .then(data => {
+        if (isMounted && data && Array.isArray(data.submissions)) {
+          setLiveAssessments(data.submissions);
+        }
+      })
+      .catch(err => {
+        console.warn('Backend live assessments unreachable, falling back:', err);
+      })
+      .finally(() => {
+        if (isMounted) setLoadingAssessments(false);
+      });
+    return () => { isMounted = false; };
+  }, []);
 
   useEffect(() => {
     const handleUpdate = () => {
@@ -270,6 +290,151 @@ export default function WorkerDashboard() {
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
+      </div>
+
+      {/* 2.5 Live Practical Skill Evaluations (PostgreSQL Verified Records) */}
+      <div className="bg-white dark:bg-charcoal-800 rounded-3xl p-6 sm:p-8 border border-beige dark:border-charcoal-700 shadow-sm transition-colors">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-beige dark:border-charcoal-700">
+          <div>
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-teal dark:text-emerald-400" />
+              <h3 className="text-xl font-bold text-teal dark:text-ivory font-heading">
+                Practical Skill Evaluations
+              </h3>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-700">
+                PostgreSQL Live Engine
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-greygreen dark:text-ivory/60 mt-1">
+              Field evaluations reviewed against standardized rubrics by accredited vocational assessors.
+            </p>
+          </div>
+
+          <Link
+            to="/worker/skills"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal dark:bg-charcoal-700 text-white hover:bg-teal-800 text-xs font-bold transition-all shadow-xs shrink-0"
+          >
+            <span>Submit New Demonstration</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {loadingAssessments ? (
+          <div className="py-8 text-center text-xs text-greygreen dark:text-ivory/60 animate-pulse">
+            Connecting to PostgreSQL evaluation engine...
+          </div>
+        ) : liveAssessments.length > 0 ? (
+          <div className="space-y-4">
+            {liveAssessments.map((sub) => {
+              const review = sub.review;
+              const isApproved = sub.status === 'approved';
+              const isRejected = sub.status === 'rejected';
+              const isResubmit = sub.status === 'resubmission_requested';
+
+              return (
+                <div
+                  key={sub.id}
+                  className="p-5 rounded-2xl border border-beige dark:border-charcoal-700 bg-sand-50/50 dark:bg-charcoal-750/50 hover:bg-white dark:hover:bg-charcoal-700/70 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                >
+                  <div className="space-y-1.5 flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-black uppercase tracking-wider text-terracotta dark:text-amber-400">
+                        {sub.task?.trade || 'Skill Demonstration'}
+                      </span>
+                      <span className="text-xs text-greygreen dark:text-ivory/40">•</span>
+                      <span className="text-xs text-greygreen dark:text-ivory/70">
+                        Task #{sub.task_id}
+                      </span>
+                      
+                      {isApproved && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-700">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                          <span>Approved & Verified</span>
+                        </span>
+                      )}
+                      {isResubmit && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-300 dark:border-amber-700">
+                          <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                          <span>Resubmission Requested</span>
+                        </span>
+                      )}
+                      {isRejected && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 px-2.5 py-0.5 rounded-full border border-rose-300 dark:border-rose-700">
+                          <AlertCircle className="w-3 h-3 text-rose-600 dark:text-rose-400" />
+                          <span>Needs Revision</span>
+                        </span>
+                      )}
+                      {!isApproved && !isResubmit && !isRejected && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 px-2.5 py-0.5 rounded-full border border-blue-300 dark:border-blue-700">
+                          <Clock className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                          <span>Under Assessor Review</span>
+                        </span>
+                      )}
+                    </div>
+
+                    <h4 className="text-base font-bold text-teal dark:text-ivory font-heading">
+                      {sub.task?.title || 'Demonstration Submission'}
+                    </h4>
+
+                    {review && (
+                      <div className="mt-2 p-3 rounded-xl bg-white dark:bg-charcoal-800 border border-beige/80 dark:border-charcoal-600 space-y-1">
+                        <div className="flex items-center justify-between text-xs font-bold text-teal dark:text-ivory">
+                          <span>Assessor Score:</span>
+                          <span className={review.total_score >= 70 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>
+                            {review.total_score} / {review.max_score} ({Math.round((review.total_score / (review.max_score || 100)) * 100)}%)
+                          </span>
+                        </div>
+                        {review.overall_feedback && (
+                          <p className="text-xs text-greygreen dark:text-ivory/80 italic">
+                            "{review.overall_feedback}"
+                          </p>
+                        )}
+                        <p className="text-[10px] text-greygreen dark:text-ivory/50">
+                          Evaluated by {review.assessor_name || 'Accredited Assessor'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex md:flex-col items-center justify-end gap-2 shrink-0">
+                    {isResubmit ? (
+                      <Link
+                        to="/worker/skills"
+                        className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-teal-950 font-bold text-xs transition-colors text-center"
+                      >
+                        Resubmit Proof
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/worker/skills"
+                        className="px-4 py-2 rounded-xl bg-sand-200 dark:bg-charcoal-700 hover:bg-sand-300 text-teal dark:text-ivory font-bold text-xs transition-colors text-center"
+                      >
+                        View Rubric Details
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-8 px-4 rounded-2xl bg-sand-50/60 dark:bg-charcoal-750/40 border border-beige dark:border-charcoal-700">
+            <Info className="w-8 h-8 text-greygreen dark:text-ivory/40 mx-auto mb-2" />
+            <p className="text-sm font-semibold text-teal dark:text-ivory">
+              No live submissions recorded yet in PostgreSQL
+            </p>
+            <p className="text-xs text-greygreen dark:text-ivory/60 mt-1 max-w-md mx-auto">
+              Select one of the 8 vocational trades to submit your practical video or image demonstration for accredited assessor review.
+            </p>
+            <Link
+              to="/worker/skills"
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-terracotta hover:bg-terracotta-600 text-white font-bold text-xs transition-colors shadow-xs"
+            >
+              <span>Explore Assessment Tasks</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* 3. Vocational Skill Categories (8 Trades Grid) */}
