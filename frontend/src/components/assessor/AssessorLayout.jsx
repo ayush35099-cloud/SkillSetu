@@ -132,7 +132,7 @@ export default function AssessorLayout() {
 
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-xl sm:text-2xl font-black font-heading tracking-tight">
+                  <h1 className="text-xl sm:text-2xl font-black font-heading tracking-tight !text-white text-white">
                     {user?.full_name || 'Vocational Assessor'}
                   </h1>
 

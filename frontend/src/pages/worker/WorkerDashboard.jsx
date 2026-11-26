@@ -46,8 +46,11 @@ export default function WorkerDashboard() {
     let isMounted = true;
     apiService.getWorkerAssessments(101)
       .then(data => {
-        if (isMounted && data && Array.isArray(data.submissions)) {
-          setLiveAssessments(data.submissions);
+        if (isMounted && data) {
+          const list = data.assessments || data.submissions || [];
+          if (Array.isArray(list)) {
+            setLiveAssessments(list);
+          }
         }
       })
       .catch(err => {
@@ -326,7 +329,7 @@ export default function WorkerDashboard() {
         ) : liveAssessments.length > 0 ? (
           <div className="space-y-4">
             {liveAssessments.map((sub) => {
-              const review = sub.review;
+              const review = sub.latest_review || sub.review;
               const isApproved = sub.status === 'approved';
               const isRejected = sub.status === 'rejected';
               const isResubmit = sub.status === 'resubmission_requested';
@@ -339,7 +342,7 @@ export default function WorkerDashboard() {
                   <div className="space-y-1.5 flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs font-black uppercase tracking-wider text-terracotta dark:text-amber-400">
-                        {sub.task?.trade || 'Skill Demonstration'}
+                        {sub.trade || sub.task?.trade || 'Skill Demonstration'}
                       </span>
                       <span className="text-xs text-greygreen dark:text-ivory/40">•</span>
                       <span className="text-xs text-greygreen dark:text-ivory/70">
@@ -373,7 +376,7 @@ export default function WorkerDashboard() {
                     </div>
 
                     <h4 className="text-base font-bold text-teal dark:text-ivory font-heading">
-                      {sub.task?.title || 'Demonstration Submission'}
+                      {sub.task_title || sub.task?.title || 'Demonstration Submission'}
                     </h4>
 
                     {review && (
@@ -381,7 +384,7 @@ export default function WorkerDashboard() {
                         <div className="flex items-center justify-between text-xs font-bold text-teal dark:text-ivory">
                           <span>Assessor Score:</span>
                           <span className={review.total_score >= 70 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>
-                            {review.total_score} / {review.max_score} ({Math.round((review.total_score / (review.max_score || 100)) * 100)}%)
+                            {review.total_score} / {review.maximum_score || review.max_score || 100} ({Math.round((review.total_score / (review.maximum_score || review.max_score || 100)) * 100)}%)
                           </span>
                         </div>
                         {review.overall_feedback && (

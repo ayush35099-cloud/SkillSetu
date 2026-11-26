@@ -395,7 +395,7 @@ export default function AssessorReview() {
                 <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
                   Predefined Rubric Engine
                 </span>
-                <h3 className="text-xl sm:text-2xl font-black font-heading mt-0.5">
+                <h3 className="text-xl sm:text-2xl font-black font-heading mt-0.5 !text-white text-white">
                   Criterion-Wise Assessment
                 </h3>
                 <p className="text-xs text-ivory/70 mt-1">
