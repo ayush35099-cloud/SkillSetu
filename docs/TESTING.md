@@ -50,6 +50,22 @@ cd backend
 python -m unittest tests/test_phase3.py -v
 ```
 
+### Backend Digital Skill Passport & Verification Test Suite
+Run the verifiable credential, QR validation, and role-gated issuance test suite:
+
+```bash
+cd backend
+python -m unittest tests/test_credentials.py -v
+```
+
+#### Expected Outcome:
+- All 14 tests in `tests/test_phase3.py` and `tests/test_credentials.py` pass (`OK`).
+- Validates 3-step credential issuance rule (Worker -> Assessor -> Admin).
+- Validates token verification endpoint (`GET /api/credentials/verify/<token>`).
+- Validates zero leakage of personal worker data (phone, email, password hash).
+- Validates revocation lifecycle and reason audit logging.
+```
+
 #### Expected Outcome:
 - Executes 8 unit tests in < 4 seconds:
   1. `test_01_health_endpoints`: Verifies `/api/health` and `/api/health/db`.

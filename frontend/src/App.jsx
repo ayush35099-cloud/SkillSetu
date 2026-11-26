@@ -25,6 +25,7 @@ import AssessorProfile from './pages/assessor/AssessorProfile';
 import AdminAssessors from './pages/assessor/AdminAssessors';
 import AssessorLogin from './pages/assessor/AssessorLogin';
 import AssessorRegister from './pages/assessor/AssessorRegister';
+import PublicVerify from './pages/PublicVerify';
 import { apiService } from './services/api';
 
 function AppContent() {
@@ -107,6 +108,9 @@ function AppContent() {
               />
             }
           />
+
+          {/* Public Digital Skill Passport QR Verification Route */}
+          <Route path="/verify/:token" element={<PublicVerify />} />
 
           {/* Dedicated Worker Experience Experience Routes */}
           <Route path="/worker" element={<WorkerLayout />}>

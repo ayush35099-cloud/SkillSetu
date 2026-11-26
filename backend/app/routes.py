@@ -1,4 +1,5 @@
 import re
+import secrets
 from datetime import datetime
 from flask import Blueprint, jsonify, request, current_app, g
 from sqlalchemy import text, desc
@@ -9,7 +10,8 @@ from .models import (
     AssessmentRubric,
     AssessmentSubmission,
     AssessmentReview,
-    AssessmentCriterionResult
+    AssessmentCriterionResult,
+    SkillCredential
 )
 from .auth import generate_token, require_auth
 
@@ -736,4 +738,185 @@ def reject_assessor(user_id):
         "status": "success",
         "message": f"Assessor '{user.full_name}' verification has been rejected.",
         "user": user.to_dict()
+    }), 200
+
+
+# ============================================================================
+# Digital Skill Passport Credential Verification & Issuance Endpoints
+# ============================================================================
+
+@main_bp.route("/api/credentials/verify/<string:token>", methods=["GET"])
+@api_bp.route("/credentials/verify/<string:token>", methods=["GET"])
+def verify_credential(token):
+    """
+    Public verification endpoint for Digital Skill Passport QR scanning.
+    Exposes only public verification fields; zero private worker data is leaked.
+    """
+    clean_token = token.strip()
+    credential = SkillCredential.query.filter_by(verification_token=clean_token).first()
+    if not credential:
+        return jsonify({
+            "status": "invalid",
+            "valid": False,
+            "message": "Credential not found or invalid verification token."
+        }), 404
+
+    if credential.status == "revoked":
+        return jsonify({
+            "status": "revoked",
+            "valid": False,
+            "message": "This credential was revoked by the platform administration.",
+            "credential": credential.to_public_dict()
+        }), 200
+
+    if credential.status == "expired":
+        return jsonify({
+            "status": "expired",
+            "valid": False,
+            "message": "This credential has expired.",
+            "credential": credential.to_public_dict()
+        }), 200
+
+    return jsonify({
+        "status": "valid",
+        "valid": True,
+        "message": "Valid SkillSetu verified practical credential.",
+        "credential": credential.to_public_dict()
+    }), 200
+
+
+@worker_bp.route("/credentials", methods=["GET"])
+def worker_credentials():
+    """Returns verified digital credentials issued for a given worker."""
+    worker_id = request.args.get("worker_id", 101, type=int)
+    credentials = SkillCredential.query.filter_by(
+        worker_id=worker_id
+    ).order_by(desc(SkillCredential.issue_date)).all()
+
+    return jsonify({
+        "status": "success",
+        "worker_id": worker_id,
+        "count": len(credentials),
+        "credentials": [c.to_admin_dict() for c in credentials]
+    }), 200
+
+
+@admin_bp.route("/credentials", methods=["GET"])
+@require_auth(allowed_roles=["admin"])
+def list_credentials():
+    """Lists all credentials issued across the platform for administrative audit."""
+    credentials = SkillCredential.query.order_by(desc(SkillCredential.created_at)).all()
+    return jsonify({
+        "status": "success",
+        "count": len(credentials),
+        "credentials": [c.to_admin_dict() for c in credentials]
+    }), 200
+
+
+@admin_bp.route("/credentials/issue", methods=["POST"])
+@require_auth(allowed_roles=["admin"])
+def issue_credential():
+    """
+    Admin-only operation: Issues an official Digital Skill Passport credential.
+    Strict Gate: Worker demonstration submission MUST be approved by an accredited assessor!
+    """
+    data = request.get_json() or {}
+    submission_id = data.get("submission_id")
+    if not submission_id:
+        return jsonify({
+            "status": "error",
+            "message": "submission_id is required to issue a Skill Passport."
+        }), 400
+
+    submission = db.session.get(AssessmentSubmission, submission_id)
+    if not submission:
+        return jsonify({
+            "status": "error",
+            "message": f"Assessment submission #{submission_id} not found."
+        }), 404
+
+    # Crucial security rule: Submission MUST be approved by an assessor!
+    if submission.status != "approved" or not submission.reviews:
+        return jsonify({
+            "status": "error",
+            "message": "Cannot issue credential: worker demonstration must be evaluated and approved by an accredited assessor first."
+        }), 400
+
+    # Check if an active credential already exists for this submission
+    existing = SkillCredential.query.filter_by(submission_id=submission.id, status="active").first()
+    if existing:
+        return jsonify({
+            "status": "success",
+            "message": "An active credential already exists for this assessment.",
+            "credential": existing.to_admin_dict()
+        }), 200
+
+    latest_review = submission.reviews[0]
+    percentage = round((latest_review.total_score / latest_review.maximum_score * 100), 1) if (latest_review and latest_review.maximum_score) else 0
+
+    if percentage >= 90:
+        skill_tier = f"Master Craftsman ({percentage}%)"
+    elif percentage >= 75:
+        skill_tier = f"Skilled Artisan ({percentage}%)"
+    elif percentage >= 60:
+        skill_tier = f"Semi-Skilled Practitioner ({percentage}%)"
+    else:
+        skill_tier = f"Apprentice ({percentage}%)"
+
+    token = secrets.token_urlsafe(32)
+    cred_id = f"SKILLSETU-2026-{1000 + submission.id:04d}"
+
+    credential = SkillCredential(
+        credential_id=cred_id,
+        verification_token=token,
+        worker_id=submission.worker_id,
+        worker_name=submission.worker_name,
+        trade=submission.trade or submission.worker_trade,
+        skill_level=data.get("skill_level") or skill_tier,
+        submission_id=submission.id,
+        review_id=latest_review.id,
+        issued_by_admin_id=g.current_user.id if hasattr(g, 'current_user') and g.current_user else None,
+        status="active"
+    )
+
+    db.session.add(credential)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": f"Skill Passport #{cred_id} successfully issued for {submission.worker_name}.",
+        "credential": credential.to_admin_dict()
+    }), 201
+
+
+@admin_bp.route("/credentials/<int:credential_id>/revoke", methods=["PATCH"])
+@require_auth(allowed_roles=["admin"])
+def revoke_credential(credential_id):
+    """
+    Admin-only operation: Revokes a credential with an explicit reason for platform audit logs.
+    """
+    credential = db.session.get(SkillCredential, credential_id)
+    if not credential:
+        return jsonify({
+            "status": "error",
+            "message": f"Credential with ID {credential_id} not found."
+        }), 404
+
+    data = request.get_json() or {}
+    reason = data.get("reason", "").strip()
+    if not reason:
+        return jsonify({
+            "status": "error",
+            "message": "A specific revocation reason is required for administrative audit logs."
+        }), 400
+
+    credential.status = "revoked"
+    credential.revocation_reason = reason
+    credential.updated_at = datetime.utcnow()
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": f"Credential #{credential.credential_id} has been revoked.",
+        "credential": credential.to_admin_dict()
     }), 200

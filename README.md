@@ -59,6 +59,7 @@ SkillSetu is entered under **Track 4 – UnlockED: Unlocking Educational Potenti
 | **Worker Portal (Interactive Demo)** | GitHub Pages | Active | [https://ayush35099-cloud.github.io/SkillSetu/worker](https://ayush35099-cloud.github.io/SkillSetu/worker) |
 | **Assessor Portal (Phase 3)** | GitHub Pages | Active | [https://ayush35099-cloud.github.io/SkillSetu/assessor](https://ayush35099-cloud.github.io/SkillSetu/assessor) |
 | **Admin Assessor Hub (Phase 3)** | GitHub Pages | Active | [https://ayush35099-cloud.github.io/SkillSetu/assessor/admin](https://ayush35099-cloud.github.io/SkillSetu/assessor/admin) |
+| **Public QR Passport Verification** | GitHub Pages | Active | [https://ayush35099-cloud.github.io/SkillSetu/verify/verify-kavita-devi-solarpv-2026](https://ayush35099-cloud.github.io/SkillSetu/verify/verify-kavita-devi-solarpv-2026) |
 | **Backend REST API** | Render (Free Tier) | Active | [https://skillsetu-backend-47ww.onrender.com](https://skillsetu-backend-47ww.onrender.com) |
 | **Backend Service Health Probe** | Render | Active | [https://skillsetu-backend-47ww.onrender.com/api/health](https://skillsetu-backend-47ww.onrender.com/api/health) |
 | **Database Connectivity Probe** | Render PostgreSQL | Active | [https://skillsetu-backend-47ww.onrender.com/api/health/db](https://skillsetu-backend-47ww.onrender.com/api/health/db) |

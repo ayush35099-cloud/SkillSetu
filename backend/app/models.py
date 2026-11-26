@@ -241,3 +241,67 @@ class AssessmentCriterionResult(db.Model):
             "score": self.score,
             "assessor_comment": self.assessor_comment,
         }
+
+
+class SkillCredential(db.Model):
+    """Verifiable Digital Skill Passport Credential Model"""
+    __tablename__ = "skill_credentials"
+
+    id = db.Column(db.Integer, primary_key=True)
+    credential_id = db.Column(db.String(64), unique=True, nullable=False, index=True)
+    verification_token = db.Column(db.String(128), unique=True, nullable=False, index=True)
+    worker_id = db.Column(db.Integer, nullable=False, index=True)
+    worker_name = db.Column(db.String(150), nullable=False)
+    trade = db.Column(db.String(50), nullable=False)
+    skill_level = db.Column(db.String(50), default="Certified Practitioner", nullable=False)
+    submission_id = db.Column(db.Integer, db.ForeignKey("assessment_submissions.id", ondelete="SET NULL"), nullable=True)
+    review_id = db.Column(db.Integer, db.ForeignKey("assessment_reviews.id", ondelete="SET NULL"), nullable=True)
+    issued_by_admin_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    issuing_authority = db.Column(db.String(100), default="SkillSetu (Track 4 – UnlockED)", nullable=False)
+    status = db.Column(db.String(20), default="active", nullable=False, index=True)  # active | revoked | expired
+    revocation_reason = db.Column(db.Text, nullable=True)
+    issue_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    submission = db.relationship("AssessmentSubmission")
+    review = db.relationship("AssessmentReview")
+    issuer = db.relationship("User", foreign_keys=[issued_by_admin_id])
+
+    def to_public_dict(self):
+        """Sanitized public verification payload with zero private worker data."""
+        return {
+            "credential_id": self.credential_id,
+            "verification_token": self.verification_token,
+            "worker_name": self.worker_name,
+            "trade": self.trade,
+            "skill_level": self.skill_level,
+            "status": self.status,
+            "is_valid": self.status == "active",
+            "revocation_reason": self.revocation_reason if self.status == "revoked" else None,
+            "issue_date": self.issue_date.isoformat() if self.issue_date else None,
+            "issuing_authority": self.issuing_authority,
+            "verification_url": f"https://ayush35099-cloud.github.io/SkillSetu/verify/{self.verification_token}",
+            "assessment_summary": {
+                "score": self.review.total_score if self.review else None,
+                "maximum_score": self.review.maximum_score if self.review else None,
+                "score_percentage": round((self.review.total_score / self.review.maximum_score * 100), 1) if (self.review and self.review.maximum_score) else None,
+                "assessed_at": self.review.reviewed_at.isoformat() if (self.review and self.review.reviewed_at) else None
+            } if self.review else None
+        }
+
+    def to_admin_dict(self):
+        """Extended dictionary for admin operations and worker passport."""
+        data = self.to_public_dict()
+        data.update({
+            "id": self.id,
+            "worker_id": self.worker_id,
+            "submission_id": self.submission_id,
+            "review_id": self.review_id,
+            "issued_by_admin_id": self.issued_by_admin_id,
+            "issuer_name": self.issuer.full_name if self.issuer else "Platform Administrator",
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        })
+        return data

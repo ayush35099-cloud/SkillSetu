@@ -371,5 +371,59 @@ export const apiService = {
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to reject assessor');
     return data;
+  },
+
+  // --------------------------------------------------------------------------
+  // Digital Skill Passport Credential APIs
+  // --------------------------------------------------------------------------
+  async verifyCredential(token) {
+    const response = await fetch(`${API_BASE_URL}/api/credentials/verify/${encodeURIComponent(token)}`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+    const data = await response.json();
+    return data;
+  },
+
+  async getWorkerCredentials(workerId = 101) {
+    const response = await fetch(`${API_BASE_URL}/api/worker/credentials?worker_id=${workerId}`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to load credentials');
+    return data;
+  },
+
+  async getAdminCredentials() {
+    const response = await fetch(`${API_BASE_URL}/api/admin/credentials`, {
+      method: 'GET',
+      headers: this.getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to load credentials');
+    return data;
+  },
+
+  async issueAdminCredential(submissionId, skillLevel = '') {
+    const response = await fetch(`${API_BASE_URL}/api/admin/credentials/issue`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({ submission_id: submissionId, skill_level: skillLevel })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to issue credential');
+    return data;
+  },
+
+  async revokeAdminCredential(credentialId, reason) {
+    const response = await fetch(`${API_BASE_URL}/api/admin/credentials/${credentialId}/revoke`, {
+      method: 'PATCH',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({ reason })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to revoke credential');
+    return data;
   }
 };

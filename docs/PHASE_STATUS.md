@@ -25,7 +25,7 @@
 │ • Authentic Indian Photo Registry (Documentary, Zero AI) ..... 100% OK │
 │ • Worker Experience Portal & Responsive Navigation ........... 100% OK │
 │ • Dynamic Profile Completion Calculation ..................... 100% OK │
-│ • Verifiable Digital Skill Passport ............ Prototype (Demo State)│
+│ • Verifiable Digital Skill Passport QR (Live) ................. 100% OK │
 │ • Role-Based Portal Gating (Contractor) ...................... 100% OK │
 ├────────────────────────────────────────────────────────────────────────┤
 │                      PHASE 3 DELIVERABLE AUDIT                         │

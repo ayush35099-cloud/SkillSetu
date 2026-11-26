@@ -343,4 +343,4 @@ export const INDIAN_REGIONS = [
   }
 ];
 
-export const DEFAULT_REGION = 'KA'; // Default prototype hub: Karnataka (Bengaluru)
+export const DEFAULT_REGION = 'IN-ALL'; // Default: All India (National)

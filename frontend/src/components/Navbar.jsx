@@ -78,7 +78,7 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden xl:flex items-center gap-5 text-sm font-semibold text-teal-700 dark:text-ivory/80">
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-5 text-sm font-semibold text-teal-700 dark:text-ivory/80 whitespace-nowrap">
             <a 
               href="#about" 
               onClick={(e) => handleNavAnchor(e, 'about')} 
@@ -101,26 +101,10 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
               {t('nav.professions', 'Professions')}
             </a>
             
-            {/* Worker Portal Link with Active Highlight */}
-            <Link
-              to="/worker"
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                isWorkerPortal
-                  ? 'bg-teal dark:bg-charcoal-700 text-white shadow-xs'
-                  : 'bg-beige/40 dark:bg-charcoal-800 text-teal dark:text-ivory hover:bg-beige dark:hover:bg-charcoal-700 hover:text-terracotta'
-              }`}
-            >
-              <Briefcase className="w-3.5 h-3.5" />
-              <span>{t('worker.nav.portalTitle', 'Worker Portal')}</span>
-              {isWorkerPortal && (
-                <span className="w-1.5 h-1.5 rounded-full bg-terracotta animate-pulse" />
-              )}
-            </Link>
-
             {/* Assessor Portal Link */}
             <Link
               to="/assessor"
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
                 isAssessorPortal
                   ? 'bg-amber-600 text-white shadow-xs'
                   : 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-200/80 dark:border-amber-800/40'
@@ -219,7 +203,7 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="xl:hidden p-2 rounded-xl text-teal dark:text-ivory hover:bg-beige/40 dark:hover:bg-charcoal-800 border border-beige dark:border-charcoal-700 transition-colors"
+              className="lg:hidden p-2 rounded-xl text-teal dark:text-ivory hover:bg-beige/40 dark:hover:bg-charcoal-800 border border-beige dark:border-charcoal-700 transition-colors"
               aria-label={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
               aria-expanded={mobileMenuOpen}
             >
@@ -237,7 +221,7 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
 
       {/* Mobile Drawer / Slide-down Menu */}
       {mobileMenuOpen && (
-        <div className="xl:hidden bg-ivory dark:bg-charcoal-900 border-b border-beige dark:border-charcoal-700 px-4 pt-3 pb-6 space-y-3 shadow-lg animate-fadeIn">
+        <div className="lg:hidden bg-ivory dark:bg-charcoal-900 border-b border-beige dark:border-charcoal-700 px-4 pt-3 pb-6 space-y-3 shadow-lg animate-fadeIn">
           <div className="flex flex-col space-y-1">
             <a
               href="#about"
@@ -261,23 +245,6 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
               <span>{t('nav.professions', 'Professions')}</span>
             </a>
             <Link
-              to="/worker"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`px-3 py-2.5 rounded-xl text-sm font-bold flex items-center justify-between transition-colors ${
-                isWorkerPortal 
-                  ? 'bg-teal dark:bg-charcoal-700 text-white' 
-                  : 'text-teal dark:text-ivory hover:bg-beige/40 dark:hover:bg-charcoal-800'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-terracotta" />
-                <span>{t('worker.nav.portalTitle', 'Worker Portal')}</span>
-              </div>
-              <span className="text-xs bg-terracotta/20 text-terracotta px-2 py-0.5 rounded-full font-bold">
-                Active
-              </span>
-            </Link>
-            <Link
               to="/assessor"
               onClick={() => setMobileMenuOpen(false)}
               className={`px-3 py-2.5 rounded-xl text-sm font-bold flex items-center justify-between transition-colors ${
@@ -291,7 +258,7 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
                 <span>Assessor Portal</span>
               </div>
               <span className="text-xs bg-amber-500/20 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full font-bold">
-                Phase 3 Live
+                Assessor Login
               </span>
             </Link>
             <a

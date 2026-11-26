@@ -1,5 +1,13 @@
 from . import db
-from .models import User, AssessmentTask, AssessmentRubric, AssessmentSubmission, AssessmentReview, AssessmentCriterionResult
+from .models import (
+    User,
+    AssessmentTask,
+    AssessmentRubric,
+    AssessmentSubmission,
+    AssessmentReview,
+    AssessmentCriterionResult,
+    SkillCredential
+)
 
 TASKS_DATA = [
     # 1. Electrician
@@ -797,5 +805,20 @@ def seed_database(app):
                         )
                         db.session.add(res)
 
+                    # Seed initial verified Digital Skill Passport credential (Kavita Devi, ID #104)
+                    cred = SkillCredential(
+                        credential_id="SKILLSETU-2026-8842",
+                        verification_token="verify-kavita-devi-solarpv-2026",
+                        worker_id=sub4.worker_id,
+                        worker_name=sub4.worker_name,
+                        trade=sub4.worker_trade,
+                        skill_level="Master Craftsman (94.0%)",
+                        submission_id=sub4.id,
+                        review_id=review.id,
+                        issued_by_admin_id=admin.id,
+                        status="active"
+                    )
+                    db.session.add(cred)
+
                 db.session.commit()
-                app.logger.info("Sample submissions and review seeded successfully.")
+                app.logger.info("Sample submissions, review, and verified credential seeded successfully.")

@@ -250,18 +250,52 @@ export default function WorkerProfile() {
               )}
             </div>
 
-            {/* City / Primary Location */}
+            {/* Home State (Origin) */}
             <div>
               <label className="block text-xs font-bold text-teal dark:text-ivory mb-1">
-                City / Work Hub *
+                Home State (Native Origin) *
+              </label>
+              <select
+                disabled={!isEditing}
+                value={formData.homeStateCode || 'BR'}
+                onChange={(e) => {
+                  const selectedReg = regions.find(r => r.code === e.target.value);
+                  setFormData({
+                    ...formData,
+                    homeStateCode: e.target.value,
+                    homeState: selectedReg ? selectedReg.name : ''
+                  });
+                }}
+                className={`w-full px-4 py-2.5 rounded-xl text-sm border font-medium transition-all ${
+                  !isEditing 
+                    ? 'bg-sand-50/60 dark:bg-charcoal-700/60 border-beige dark:border-charcoal-600 text-teal-900 dark:text-ivory cursor-not-allowed' 
+                    : 'bg-white dark:bg-charcoal-700 border-beige dark:border-charcoal-600 text-teal-950 dark:text-ivory'
+                }`}
+              >
+                {regions.filter(r => r.code !== 'IN-ALL').map((r) => (
+                  <option key={r.code} value={r.code}>
+                    {r.name} ({r.category})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Current City / Work Hub */}
+            <div>
+              <label className="block text-xs font-bold text-teal dark:text-ivory mb-1">
+                Current City / Work Hub *
               </label>
               <div className="relative">
                 <MapPin className="w-4 h-4 text-greygreen dark:text-ivory/40 absolute left-3.5 top-3" />
                 <input
                   type="text"
                   disabled={!isEditing}
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  value={formData.currentCity || formData.location?.split(',')[0] || ''}
+                  onChange={(e) => setFormData({ 
+                    ...formData, 
+                    currentCity: e.target.value,
+                    location: `${e.target.value}, ${formData.currentState || 'Karnataka'}` 
+                  })}
                   className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-sm border font-medium transition-all ${
                     !isEditing 
                       ? 'bg-sand-50/60 dark:bg-charcoal-700/60 border-beige dark:border-charcoal-600 text-teal-900 dark:text-ivory cursor-not-allowed'
@@ -272,20 +306,24 @@ export default function WorkerProfile() {
               </div>
             </div>
 
-            {/* State Selection */}
+            {/* Current State Selection */}
             <div>
               <label className="block text-xs font-bold text-teal dark:text-ivory mb-1">
-                State / Union Territory *
+                Current State / Union Territory *
               </label>
               <select
                 disabled={!isEditing}
-                value={formData.stateCode || 'KA'}
+                value={formData.currentStateCode || formData.stateCode || 'KA'}
                 onChange={(e) => {
                   const selectedReg = regions.find(r => r.code === e.target.value);
+                  const stateName = selectedReg ? selectedReg.name : '';
                   setFormData({
                     ...formData,
+                    currentStateCode: e.target.value,
+                    currentState: stateName,
                     stateCode: e.target.value,
-                    state: selectedReg ? selectedReg.name : ''
+                    state: stateName,
+                    location: `${formData.currentCity || 'Bengaluru'}, ${stateName}`
                   });
                 }}
                 className={`w-full px-4 py-2.5 rounded-xl text-sm border font-medium transition-all ${
@@ -300,6 +338,28 @@ export default function WorkerProfile() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Preferred Work Locations */}
+            <div className="md:col-span-2">
+              <label className="block text-xs font-bold text-teal dark:text-ivory mb-1">
+                Preferred Work Locations (Interstate Mobility)
+              </label>
+              <input
+                type="text"
+                disabled={!isEditing}
+                value={formData.preferredWorkLocations || 'Bengaluru, Patna, All India'}
+                onChange={(e) => setFormData({ ...formData, preferredWorkLocations: e.target.value })}
+                className={`w-full px-4 py-2.5 rounded-xl text-sm border font-medium transition-all ${
+                  !isEditing 
+                    ? 'bg-sand-50/60 dark:bg-charcoal-700/60 border-beige dark:border-charcoal-600 text-teal-900 dark:text-ivory cursor-not-allowed' 
+                    : 'bg-white dark:bg-charcoal-700 border-beige dark:border-charcoal-600 focus:border-teal text-teal-950 dark:text-ivory'
+                }`}
+                placeholder="e.g. Bengaluru, Patna, Hyderabad, All India"
+              />
+              <p className="text-[11px] text-greygreen dark:text-ivory/60 mt-1">
+                SkillSetu supports national mobility. You can find projects and contractors across any Indian State regardless of your home state.
+              </p>
             </div>
           </div>
         </div>
