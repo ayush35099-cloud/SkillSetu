@@ -7,7 +7,11 @@ from .models import (
     AssessmentSubmission,
     AssessmentReview,
     AssessmentCriterionResult,
-    SkillCredential
+    SkillCredential,
+    ContractorProfile,
+    JobPosting,
+    JobApplication,
+    ContactRequest
 )
 
 TASKS_DATA = [
@@ -873,3 +877,139 @@ def seed_database(app):
                 db.session.add(cred)
                 db.session.commit()
                 app.logger.info("Seeded verified Digital Skill Passport credential SKILLSETU-2026-8842.")
+
+        # 8. Seed Demo Contractor Account and Profile (L&T Urban Infra Projects)
+        contractor_user = User.query.filter_by(email="contractor@skillsetu.in").first()
+        if not contractor_user:
+            contractor_user = User(
+                full_name="Vikramaditya Singhania",
+                email="contractor@skillsetu.in",
+                phone="9820012345",
+                location="Mumbai, Maharashtra",
+                role="contractor",
+                professional_qualification="Director of Site Engineering & Project Procurement",
+                years_of_experience=15,
+                specialisation="contractor",
+                verification_status="verified"
+            )
+            contractor_user.set_password(os.getenv("SEED_CONTRACTOR_PASSWORD", "Contractor@123"))
+            db.session.add(contractor_user)
+            db.session.flush()
+
+            contractor_profile = ContractorProfile(
+                user_id=contractor_user.id,
+                company_name="L&T Urban Infra Projects",
+                business_type="Infrastructure & Commercial Construction",
+                gstin="27AAACL1234F1Z8",
+                business_address="L&T Technology Center, Saki Vihar Road, Powai",
+                city="Mumbai",
+                state="Maharashtra",
+                verification_status="verified",
+                contact_email="procurement@lturbaninfra.com",
+                contact_phone="+91 22 6705 2000",
+                website="https://lturbaninfra.com",
+                description="Premier civil engineering and commercial electrical contractor executing metro, data center, and smart city infrastructure projects across India."
+            )
+            db.session.add(contractor_profile)
+            db.session.commit()
+            app.logger.info("Demo contractor account created: contractor@skillsetu.in")
+
+        # 9. Seed Sample Job Postings (if none exist for this contractor)
+        if contractor_user and JobPosting.query.filter_by(contractor_id=contractor_user.id).first() is None:
+            job1 = JobPosting(
+                contractor_id=contractor_user.id,
+                title="Senior Industrial Substation Electrician",
+                trade="electrician",
+                description="Required 5 qualified industrial electricians for power distribution board termination, 415V busbar trunking, and HT/LT panel testing at commercial datacenter site in Powai.",
+                required_skills="HT/LT Panel Termination, Conduit Bending, Megger Testing, Cable Dressing, Busbar Jointing",
+                workers_needed=5,
+                experience_years=4,
+                location="Powai Commercial Datacenter Site, Saki Vihar Road",
+                city="Mumbai",
+                state="Maharashtra",
+                employment_type="Full-time",
+                payment_type="Monthly",
+                wage_min=28000.0,
+                wage_max=36000.0,
+                duration="12 Months (Extendable)",
+                start_date="Immediate",
+                working_hours="8 Hours / Day (General Shift: 9:00 AM - 5:30 PM)",
+                safety_requirements="Mandatory 1000V insulated safety shoes, IS-standard helmet, and clear safety goggles. Arc-flash face shields provided on site.",
+                contact_details="L&T Site Office, Powai. Tel: +91 22 6705 2100",
+                status="active"
+            )
+            db.session.add(job1)
+
+            job2 = JobPosting(
+                contractor_id=contractor_user.id,
+                title="High-Pressure CPVC & Fire Hydrant Plumbing Specialist",
+                trade="plumber",
+                description="Looking for 3 certified plumbers for multi-story residential tower utility line installation, CPVC riser joints, and 12-bar hydrostatic pressure testing.",
+                required_skills="CPVC Solvent Welding, Fire Sprinkler Threading, Hydrostatic Testing, Pressure Reducer Valve Calibration",
+                workers_needed=3,
+                experience_years=3,
+                location="Whitefield Tech Park Extension",
+                city="Bengaluru",
+                state="Karnataka",
+                employment_type="Contract",
+                payment_type="Daily",
+                wage_min=1100.0,
+                wage_max=1400.0,
+                duration="6 Months",
+                start_date="Within 1 Week",
+                working_hours="8 Hours / Day (8:30 AM - 5:00 PM)",
+                safety_requirements="Cut-resistant gloves, safety boots, safety harness for shaft installation.",
+                contact_details="Site PM: +91 80 4123 9080",
+                status="active"
+            )
+            db.session.add(job2)
+
+            job3 = JobPosting(
+                contractor_id=contractor_user.id,
+                title="Solar PV & Backup Inverter Commissioning Technician",
+                trade="technician",
+                description="Immediate opening for 2 technicians to mount rooftop solar array microinverters, battery banks, and 24V/48V charge controllers.",
+                required_skills="Solar PV String Inverters, DC Battery Bank Cabling, MC4 Crimping, Smart Meter Integration",
+                workers_needed=2,
+                experience_years=2,
+                location="Okhla Industrial Area Phase-III",
+                city="Delhi",
+                state="Delhi (NCT)",
+                employment_type="Full-time",
+                payment_type="Monthly",
+                wage_min=25000.0,
+                wage_max=32000.0,
+                duration="Ongoing / Permanent",
+                start_date="Immediate",
+                working_hours="9:00 AM - 6:00 PM",
+                safety_requirements="Fall-arrest rooftop harness, UV protection glasses, insulated screwdrivers.",
+                contact_details="Delhi Regional Hub. Email: solar.delhi@lturbaninfra.com",
+                status="active"
+            )
+            db.session.add(job3)
+            db.session.flush()
+
+            # Seed sample application from Ramesh Kumar to Job 1
+            if worker_ramesh:
+                app1 = JobApplication(
+                    job_id=job1.id,
+                    worker_id=worker_ramesh.id,
+                    status="applied",
+                    cover_note="Experienced with industrial 415V panels and IS-standard conduit termination. Verified SkillSetu electrician ready for immediate joining."
+                )
+                db.session.add(app1)
+
+            # Seed sample contact request from Contractor to Kavita Devi
+            if worker_kavita:
+                contact1 = ContactRequest(
+                    contractor_id=contractor_user.id,
+                    worker_id=worker_kavita.id,
+                    job_id=job3.id,
+                    message="Hello Kavita, we reviewed your verified SkillSetu Digital Skill Passport for Solar PV & Inverter Commissioning. We have an immediate requirement for rooftop solar technicians in Delhi. Would you be open to an interview?",
+                    status="accepted",
+                    worker_contact_shared=True
+                )
+                db.session.add(contact1)
+
+            db.session.commit()
+            app.logger.info("Sample jobs, application, and contact request seeded successfully.")

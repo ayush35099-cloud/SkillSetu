@@ -11,9 +11,9 @@
 |:---:|:---|:---|:---|:---:|
 | **Phase 1** | **Project Foundation & Cloud Infrastructure** | DevOps & System Architecture | Flask REST backend, PostgreSQL connectivity, Render Free Web Service, GitHub Actions CI/CD to GitHub Pages, live health monitoring. | ✅ **COMPLETED** |
 | **Phase 2** | **UI/UX Foundation & Worker Experience** | Blue-Collar Artisans | Accessible mobile-first UI, 3-way theme engine, 7 Indian languages, 36 States/UTs regional personalisation, authentic Indian photo registry, Worker Portal demo, dynamic completion score. | ✅ **COMPLETED** |
-| **Phase 3** | **Practical Assessor Portal & Rubrics** | Vocational Assessors & Master Craftsmen | Assessor onboarding, standardized practical rubrics for 8 trades, photographic/video evidence review, multi-tier grading engine. | ⏳ **NEXT UP** |
-| **Phase 4** | **Contractor Hub & Direct Marketplace** | Building Contractors & Site Engineers | Vetted contractor profiles, skill-targeted job postings, direct messaging, wage escrow protection, zero-middleman hiring. | ⏳ Planned |
-| **Phase 5** | **Voice-First AI Assistant (Gemini Live)** | Pre-literate & Vernacular Workers | Bidirectional speech-to-speech interaction across 7 Indian languages, audio task guidance, conversational profile builder. | ⏳ Planned |
+| **Phase 3** | **Practical Assessor Portal & Rubrics** | Vocational Assessors & Master Craftsmen | Assessor onboarding, standardized practical rubrics for 8 trades, photographic/video evidence review, multi-tier grading engine. | ✅ **COMPLETED** |
+| **Phase 4** | **Contractor Hub & Direct Marketplace** | Building Contractors & Site Engineers | Vetted contractor profiles, skill-targeted job postings, verified worker discovery, direct application flow, safe contact requests, and admin moderation. | ✅ **COMPLETED** |
+| **Phase 5** | **Voice-First AI Assistant (Gemini Live)** | Pre-literate & Vernacular Workers | Bidirectional speech-to-speech interaction across 7 Indian languages, audio task guidance, conversational profile builder. | ⏳ **NEXT UP** |
 | **Phase 6** | **Automated Video Skill Verification (Gemini)** | AI Quality Assurance | Multimodal computer vision analysis of practical demonstration videos, PPE detection, tool technique analysis, anomaly scoring. | ⏳ Planned |
 | **Phase 7** | **Tamper-Proof Digital Skill Passport** | Industry & Regulatory Bodies | W3C Verifiable Credentials (VCs), Decentralized Identifiers (DIDs), cryptographic signing, tamper-evident verifiable QR codes. | ⏳ Planned |
 | **Phase 8** | **Offline-First Progressive Web App (PWA)** | Remote Site Workers | Service Worker caching, background sync for intermittent 2G/3G connectivity, offline audio playback, local task draft queue. | ⏳ Planned |
@@ -102,20 +102,31 @@
 
 ---
 
-### Phase 4: Contractor Hub & Direct Marketplace
+### Phase 4: Contractor Hub & Direct Marketplace (Completed)
 - **Objective**: Connect verified artisans directly with construction companies, contractors, and individual site engineers, eliminating wage-depressing intermediaries.
 - **Key Deliverables**:
-  - **Contractor Portal**:
-    - Contractor registration with GSTIN/CIN verification and company profile.
-    - Project management dashboard (active job sites, crew requirements).
-  - **Skill-Targeted Job Postings**:
-    - Job listing creation with verified skill criteria (e.g. "Requires Skilled Plumber with CPVC certification").
-    - Transparent wage disclosure (daily rate or task-based milestones).
-  - **Direct Candidate Discovery**:
-    - Filter artisans by trade, certified skill tier, state/district, and language preference.
-    - 1-click candidate engagement without intermediary middleman fees.
-  - **Wage Protection & Milestone Escrow**:
-    - Milestone-based fund reservation ensuring guaranteed compensation upon task completion.
+  - **Contractor Portal & Authentication**:
+    - Dedicated contractor onboarding (`/contractor/register`, `/contractor/login`) with company profile, phone, GSTIN, business type, and verification status (`pending`, `verified`, `rejected`).
+    - Multi-tenant role-based access control with scoped token authentication.
+    - Contractor Hub Dashboard (`/contractor`) with live key metrics, recent applicants, active job listings, and quick actions.
+  - **Skill-Targeted Job Postings CRUD**:
+    - Job listing management (`/contractor/jobs`) supporting all 8 core trades with daily/monthly wage ranges, requirements, openings, and status toggles (`active`, `paused`, `closed`).
+  - **Verified Worker Discovery Marketplace**:
+    - Searchable directory of verified artisans (`/contractor/workers`) with trade, state, city, and minimum experience filters.
+    - Direct link to worker's tamper-proof Digital Skill Passport (`/verify/:token`).
+    - Zero worker PII leakage: Phone numbers and email addresses are strictly shielded until worker grants explicit consent.
+  - **Direct Application Lifecycle**:
+    - Worker job board (`/worker/jobs`): Workers can browse active opportunities, apply with an optional cover note, track status (`submitted`, `shortlisted`, `hired`, `rejected`), and withdraw applications.
+    - Contractor application review (`/contractor/applications`): Filter by job and review applicant qualifications with 1-click status transitions.
+  - **Safe Contact Request Workflow**:
+    - Contractors can request worker direct contact info by proposing a project and wage rate.
+    - Workers receive actionable contact requests in their portal and choose to Accept or Decline.
+    - Worker phone/email is decrypted/shared only after worker accepts.
+  - **Platform Governance & Navbar Polish**:
+    - Admin panel extension (`AdminAssessors.jsx`) with dedicated Contractors & Jobs tab for verifying organizations and deleting fraudulent/exploitative postings.
+    - Cleaned public navbar: removed diagnostic "API Status" link and "API Live" pill, replacing them with a sleek "Contractor Hub" entry point.
+  - **Automated Test Suite**:
+    - 7 comprehensive tests in `backend/tests/test_phase4_contractor.py`; 29/29 total tests passing across backend suite.
 
 ---
 

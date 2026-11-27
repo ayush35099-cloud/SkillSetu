@@ -484,5 +484,262 @@ export const apiService = {
       { method: 'PATCH', headers: this.getAuthHeaders(), body: { reason } },
       'Failed to revoke credential'
     );
+  },
+
+  // --------------------------------------------------------------------------
+  // Phase 4: Contractor Hub & Direct Hiring Marketplace APIs
+  // --------------------------------------------------------------------------
+  async contractorRegister(payload) {
+    return this._requestJson(
+      '/api/auth/contractor/register',
+      { method: 'POST', body: payload },
+      'Contractor registration failed'
+    );
+  },
+
+  async contractorLogin(email, password) {
+    return this._requestJson(
+      '/api/auth/contractor/login',
+      { method: 'POST', body: { email, password } },
+      'Contractor login failed'
+    );
+  },
+
+  async getContractorProfile() {
+    return this._requestJson(
+      '/api/contractor/profile',
+      { headers: this.getAuthHeaders() },
+      'Failed to fetch contractor profile'
+    );
+  },
+
+  async updateContractorProfile(payload) {
+    return this._requestJson(
+      '/api/contractor/profile',
+      { method: 'PUT', headers: this.getAuthHeaders(), body: payload },
+      'Failed to update contractor profile'
+    );
+  },
+
+  async getContractorDashboard() {
+    return this._requestJson(
+      '/api/contractor/dashboard',
+      { headers: this.getAuthHeaders() },
+      'Failed to load contractor dashboard'
+    );
+  },
+
+  async getContractorJobs(status = '') {
+    const qs = status ? `?status=${encodeURIComponent(status)}` : '';
+    return this._requestJson(
+      `/api/contractor/jobs${qs}`,
+      { headers: this.getAuthHeaders() },
+      'Failed to load contractor jobs'
+    );
+  },
+
+  async createContractorJob(payload) {
+    return this._requestJson(
+      '/api/contractor/jobs',
+      { method: 'POST', headers: this.getAuthHeaders(), body: payload },
+      'Failed to create job posting'
+    );
+  },
+
+  async getContractorJob(jobId) {
+    return this._requestJson(
+      `/api/contractor/jobs/${jobId}`,
+      { headers: this.getAuthHeaders() },
+      'Failed to load job details'
+    );
+  },
+
+  async updateContractorJob(jobId, payload) {
+    return this._requestJson(
+      `/api/contractor/jobs/${jobId}`,
+      { method: 'PUT', headers: this.getAuthHeaders(), body: payload },
+      'Failed to update job posting'
+    );
+  },
+
+  async setContractorJobStatus(jobId, status) {
+    return this._requestJson(
+      `/api/contractor/jobs/${jobId}/status`,
+      { method: 'PATCH', headers: this.getAuthHeaders(), body: { status } },
+      'Failed to update job status'
+    );
+  },
+
+  async deleteContractorJob(jobId) {
+    return this._requestJson(
+      `/api/contractor/jobs/${jobId}`,
+      { method: 'DELETE', headers: this.getAuthHeaders() },
+      'Failed to delete job posting'
+    );
+  },
+
+  async getContractorJobApplications(jobId) {
+    return this._requestJson(
+      `/api/contractor/jobs/${jobId}/applications`,
+      { headers: this.getAuthHeaders() },
+      'Failed to load applications for job'
+    );
+  },
+
+  async getAllContractorApplications(status = '') {
+    const qs = status ? `?status=${encodeURIComponent(status)}` : '';
+    return this._requestJson(
+      `/api/contractor/applications${qs}`,
+      { headers: this.getAuthHeaders() },
+      'Failed to load applications'
+    );
+  },
+
+  async updateApplicationStatus(appId, status) {
+    return this._requestJson(
+      `/api/contractor/applications/${appId}/status`,
+      { method: 'PATCH', headers: this.getAuthHeaders(), body: { status } },
+      'Failed to update application status'
+    );
+  },
+
+  async discoverVerifiedWorkers(params = {}) {
+    const query = new URLSearchParams();
+    if (params.trade && params.trade !== 'all') query.set('trade', params.trade);
+    if (params.city) query.set('city', params.city);
+    if (params.state) query.set('state', params.state);
+    if (params.q) query.set('q', params.q);
+    if (params.min_experience) query.set('min_experience', params.min_experience);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+
+    return this._requestJson(
+      `/api/contractor/workers${qs}`,
+      { headers: this.getAuthHeaders() },
+      'Failed to search verified workers'
+    );
+  },
+
+  async sendContactRequest(payload) {
+    return this._requestJson(
+      '/api/contractor/contact-requests',
+      { method: 'POST', headers: this.getAuthHeaders(), body: payload },
+      'Failed to send interview request'
+    );
+  },
+
+  async getContractorContactRequests() {
+    return this._requestJson(
+      '/api/contractor/contact-requests',
+      { headers: this.getAuthHeaders() },
+      'Failed to load contact requests'
+    );
+  },
+
+  // --------------------------------------------------------------------------
+  // Phase 4: Worker Job Browsing & Application APIs
+  // --------------------------------------------------------------------------
+  async getPublicJobs(params = {}) {
+    const query = new URLSearchParams();
+    if (params.trade && params.trade !== 'all') query.set('trade', params.trade);
+    if (params.city) query.set('city', params.city);
+    if (params.state) query.set('state', params.state);
+    if (params.employment_type && params.employment_type !== 'all') query.set('employment_type', params.employment_type);
+    if (params.q) query.set('q', params.q);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+
+    return this._requestJson(
+      `/api/worker/jobs${qs}`,
+      { headers: { 'Accept': 'application/json' } },
+      'Failed to load jobs'
+    );
+  },
+
+  async getJobDetail(jobId) {
+    return this._requestJson(
+      `/api/worker/jobs/${jobId}`,
+      { headers: { 'Accept': 'application/json' } },
+      'Failed to load job details'
+    );
+  },
+
+  async applyToJob(jobId, coverNote = '') {
+    return this._requestJson(
+      `/api/worker/jobs/${jobId}/apply`,
+      { method: 'POST', headers: this.getAuthHeaders(), body: { cover_note: coverNote } },
+      'Failed to submit job application'
+    );
+  },
+
+  async getMyJobApplications() {
+    return this._requestJson(
+      '/api/worker/applications',
+      { headers: this.getAuthHeaders() },
+      'Failed to load your applications'
+    );
+  },
+
+  async withdrawJobApplication(appId) {
+    return this._requestJson(
+      `/api/worker/applications/${appId}/withdraw`,
+      { method: 'PATCH', headers: this.getAuthHeaders() },
+      'Failed to withdraw application'
+    );
+  },
+
+  async getWorkerContactRequests() {
+    return this._requestJson(
+      '/api/worker/contact-requests',
+      { headers: this.getAuthHeaders() },
+      'Failed to load contact requests'
+    );
+  },
+
+  async respondToContactRequest(requestId, action, shareContact = true) {
+    return this._requestJson(
+      `/api/worker/contact-requests/${requestId}/respond`,
+      { method: 'PATCH', headers: this.getAuthHeaders(), body: { action, share_contact: shareContact } },
+      'Failed to respond to contact request'
+    );
+  },
+
+  // --------------------------------------------------------------------------
+  // Phase 4: Admin Contractor Management & Job Moderation APIs
+  // --------------------------------------------------------------------------
+  async getAdminContractors(status = '') {
+    const qs = status ? `?status=${encodeURIComponent(status)}` : '';
+    return this._requestJson(
+      `/api/admin/contractors${qs}`,
+      { headers: this.getAuthHeaders() },
+      'Failed to load contractors'
+    );
+  },
+
+  async verifyAdminContractor(contractorId, status, reason = '') {
+    return this._requestJson(
+      `/api/admin/contractors/${contractorId}/verify`,
+      { method: 'PATCH', headers: this.getAuthHeaders(), body: { status, reason } },
+      'Failed to update contractor verification'
+    );
+  },
+
+  async getAdminJobs(params = {}) {
+    const query = new URLSearchParams();
+    if (params.trade && params.trade !== 'all') query.set('trade', params.trade);
+    if (params.status && params.status !== 'all') query.set('status', params.status);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+
+    return this._requestJson(
+      `/api/admin/jobs${qs}`,
+      { headers: this.getAuthHeaders() },
+      'Failed to load jobs for moderation'
+    );
+  },
+
+  async deleteAdminJob(jobId) {
+    return this._requestJson(
+      `/api/admin/jobs/${jobId}`,
+      { method: 'DELETE', headers: this.getAuthHeaders() },
+      'Failed to remove job posting'
+    );
   }
 };

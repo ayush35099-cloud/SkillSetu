@@ -32,6 +32,9 @@ export default function LoginModal({ isOpen, onClose }) {
     if (selectedRole === 'worker') {
       onClose();
       navigate('/worker');
+    } else if (selectedRole === 'contractor') {
+      onClose();
+      navigate('/contractor');
     } else if (selectedRole === 'assessor') {
       onClose();
       navigate('/assessor');
@@ -152,12 +155,12 @@ export default function LoginModal({ isOpen, onClose }) {
                   <h3 className="text-sm font-bold text-teal dark:text-ivory font-heading">
                     {t('loginModal.contractorOption', 'I am a Contractor / Builder')}
                   </h3>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sand-200 dark:bg-charcoal-700 text-greygreen dark:text-ivory/60">
-                    Phase 4
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                    Phase 4 Live
                   </span>
                 </div>
                 <p className="text-xs text-greygreen dark:text-ivory/60 mt-0.5 leading-relaxed">
-                  {t('loginModal.contractorOptionDesc', 'Browse certified local tradespeople with verified practical competence.')}
+                  Discover verified tradespeople, post job vacancies, and manage worker applications.
                 </p>
               </div>
             </div>
@@ -217,29 +220,6 @@ export default function LoginModal({ isOpen, onClose }) {
             </div>
           </div>
 
-          {/* Role Status Notice for Contractor */}
-          {selectedRole === 'contractor' && (
-            <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5 mb-5 animate-fadeIn">
-              <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-              <div className="leading-relaxed">
-                <strong className="block font-bold">
-                  {getRoleNoticeTitle()}
-                </strong>
-                <p className="mt-0.5">
-                  {getRoleNoticeBody()}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Transparent Auth Status Notice */}
-          <div className="p-3 rounded-xl bg-teal-50/80 dark:bg-charcoal-800 border border-teal-200/60 dark:border-charcoal-700 text-teal-900 dark:text-ivory/80 text-xs flex items-start gap-2.5 mb-5">
-            <Info className="w-4 h-4 text-teal dark:text-ivory/60 shrink-0 mt-0.5" />
-            <p className="leading-relaxed">
-              {t('loginModal.authNotice', 'Authentication is integrated with PostgreSQL. Assessor demo accounts and Admin credentials are pre-configured.')}
-            </p>
-          </div>
-
           {/* Action Button */}
           {selectedRole === 'worker' ? (
             <button
@@ -248,6 +228,15 @@ export default function LoginModal({ isOpen, onClose }) {
               className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-terracotta hover:bg-terracotta-600 text-white font-bold text-sm shadow-md shadow-terracotta/20 transition-all transform active:scale-[0.98]"
             >
               <span>{t('loginModal.demoWorkerBtn', 'Enter Worker Demo Portal')}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : selectedRole === 'contractor' ? (
+            <button
+              type="button"
+              onClick={handleContinue}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-teal hover:bg-teal-800 text-white font-bold text-sm shadow-md shadow-teal/20 transition-all transform active:scale-[0.98]"
+            >
+              <span>Enter Contractor Hub (Phase 4)</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           ) : selectedRole === 'assessor' ? (

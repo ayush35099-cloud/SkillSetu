@@ -40,6 +40,7 @@ All trade cards feature real craftspeople actively working with standard trade t
 | **Welder** (`trade_welder`) | `https://images.unsplash.com/photo-1504307651254-35680f356dfd` | Naveed Ahmed | Unsplash License | Industrial structural welding and steel fabrication in protective safety gear. |
 | **Painter** (`trade_painter`) | `https://images.unsplash.com/photo-1562259949-e8e7689d7828` | Yogendra Singh | Unsplash License | Painter applying uniform finish coat with roller after surface putty preparation. |
 | **Mechanic** (`trade_mechanic`) | `https://images.unsplash.com/photo-1619642751034-765dfdf7c58e` | Subhayan Das | Unsplash License | Automotive mechanic overhauling engine components and diagnostic troubleshooting. |
+| **Technician / Electrical Diagnostics** (`trade_technician`) | Local WebP / JPG (`1024 × 682`): `frontend/public/images/electrician-technician.webp` | Lakshmiprasad S | Licensed / User Verified | Indian electrical technician wearing a cap operating a laptop to run diagnostics on an industrial power control and generator panel. |
 | **Other Trades** (`trade_other`) | `https://images.pexels.com/photos/31321047/pexels-photo-31321047.jpeg` | EqualStock IN | Pexels License | Two Indian women technicians operating computer and scanning terminals in an industrial factory setting. |
 
 ---

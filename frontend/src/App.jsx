@@ -14,6 +14,7 @@ import WorkerLayout from './components/worker/WorkerLayout';
 import WorkerDashboard from './pages/worker/WorkerDashboard';
 import WorkerProfile from './pages/worker/WorkerProfile';
 import WorkerSkills from './pages/worker/WorkerSkills';
+import WorkerJobs from './pages/worker/WorkerJobs';
 import SkillPassport from './pages/worker/SkillPassport';
 import AssessorAuthGuard from './components/assessor/AssessorAuthGuard';
 import AssessorLayout from './components/assessor/AssessorLayout';
@@ -25,6 +26,15 @@ import AssessorProfile from './pages/assessor/AssessorProfile';
 import AdminAssessors from './pages/assessor/AdminAssessors';
 import AssessorLogin from './pages/assessor/AssessorLogin';
 import AssessorRegister from './pages/assessor/AssessorRegister';
+import ContractorAuthGuard from './components/contractor/ContractorAuthGuard';
+import ContractorLayout from './components/contractor/ContractorLayout';
+import ContractorLogin from './pages/contractor/ContractorLogin';
+import ContractorRegister from './pages/contractor/ContractorRegister';
+import ContractorDashboard from './pages/contractor/ContractorDashboard';
+import ContractorJobs from './pages/contractor/ContractorJobs';
+import ContractorApplications from './pages/contractor/ContractorApplications';
+import ContractorWorkerSearch from './pages/contractor/ContractorWorkerSearch';
+import ContractorProfile from './pages/contractor/ContractorProfile';
 import PublicVerify from './pages/PublicVerify';
 import { apiService } from './services/api';
 
@@ -117,6 +127,7 @@ function AppContent() {
             <Route index element={<WorkerDashboard />} />
             <Route path="profile" element={<WorkerProfile />} />
             <Route path="skills" element={<WorkerSkills />} />
+            <Route path="jobs" element={<WorkerJobs />} />
             <Route path="passport" element={<SkillPassport />} />
           </Route>
 
@@ -139,6 +150,26 @@ function AppContent() {
             <Route path="history" element={<AssessorHistory />} />
             <Route path="profile" element={<AssessorProfile />} />
             <Route path="admin" element={<AdminAssessors />} />
+          </Route>
+
+          {/* Dedicated Contractor Portal Public Auth Routes */}
+          <Route path="/contractor/login" element={<ContractorLogin />} />
+          <Route path="/contractor/register" element={<ContractorRegister />} />
+
+          {/* Protected Contractor Hub Experience Routes */}
+          <Route
+            path="/contractor"
+            element={
+              <ContractorAuthGuard>
+                <ContractorLayout />
+              </ContractorAuthGuard>
+            }
+          >
+            <Route index element={<ContractorDashboard />} />
+            <Route path="jobs" element={<ContractorJobs />} />
+            <Route path="applications" element={<ContractorApplications />} />
+            <Route path="workers" element={<ContractorWorkerSearch />} />
+            <Route path="profile" element={<ContractorProfile />} />
           </Route>
 
           {/* Fallback to Home */}

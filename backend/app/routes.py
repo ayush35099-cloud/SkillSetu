@@ -13,7 +13,11 @@ from .models import (
     AssessmentSubmission,
     AssessmentReview,
     AssessmentCriterionResult,
-    SkillCredential
+    SkillCredential,
+    ContractorProfile,
+    JobPosting,
+    JobApplication,
+    ContactRequest
 )
 from .auth import generate_token, require_auth
 
@@ -24,6 +28,7 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 task_bp = Blueprint("tasks", __name__, url_prefix="/api/tasks")
 assessor_bp = Blueprint("assessor", __name__, url_prefix="/api/assessor")
 worker_bp = Blueprint("worker", __name__, url_prefix="/api/worker")
+contractor_bp = Blueprint("contractor", __name__, url_prefix="/api/contractor")
 admin_bp = Blueprint("admin", __name__, url_prefix="/api/admin")
 
 
@@ -36,7 +41,7 @@ def root():
     return jsonify({
         "message": "Welcome to SkillSetu API",
         "service": "SkillSetu Backend",
-        "version": "1.1.0 (Phase 3: Assessor Portal & Practical Evaluation Engine)",
+        "version": "1.2.0 (Phase 4: Contractor Hub & Direct Hiring Marketplace)",
         "endpoints": {
             "root": "/",
             "health": "/api/health",
@@ -45,6 +50,7 @@ def root():
             "tasks": "/api/tasks",
             "assessor": "/api/assessor/*",
             "worker": "/api/worker/*",
+            "contractor": "/api/contractor/*",
             "admin": "/api/admin/*"
         }
     }), 200
@@ -63,7 +69,7 @@ def health():
     return jsonify({
         "status": "healthy",
         "service": "SkillSetu Backend",
-        "phase": "Phase 3 – Assessor Portal & Evaluation Engine",
+        "phase": "Phase 4 – Contractor Hub & Direct Hiring Marketplace",
         "timestamp": datetime.utcnow().isoformat()
     }), 200
 
@@ -332,6 +338,100 @@ def auth_me():
         "status": "success",
         "user": g.current_user.to_dict()
     }), 200
+
+
+@auth_bp.route("/contractor/register", methods=["POST"])
+def contractor_register():
+    data = request.get_json() or {}
+
+    full_name = data.get("full_name", "").strip()
+    company_name = data.get("company_name", "").strip()
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "")
+    phone = data.get("phone", "").strip()
+    business_address = data.get("business_address", "").strip()
+    city = data.get("city", "").strip()
+    state = data.get("state", "").strip()
+    business_type = data.get("business_type", "General Contractor").strip()
+    gstin = data.get("gstin", "").strip()
+    description = data.get("description", "").strip()
+    website = data.get("website", "").strip()
+
+    if not full_name or not company_name or not email or not password or not city or not state:
+        return jsonify({
+            "status": "error",
+            "message": "Full name, company name, email address, password, city, and state are required."
+        }), 400
+
+    if len(password) < 6:
+        return jsonify({
+            "status": "error",
+            "message": "Password must be at least 6 characters long."
+        }), 400
+
+    if not re.match(r"^[^@]+@[^@]+\.[^@]+$", email):
+        return jsonify({
+            "status": "error",
+            "message": "Invalid email address format."
+        }), 400
+
+    if User.query.filter_by(email=email).first():
+        return jsonify({
+            "status": "error",
+            "message": "An account with this email address already exists."
+        }), 409
+
+    location_str = f"{city}, {state}" if city and state else city or state or "India"
+
+    user = User(
+        full_name=full_name,
+        email=email,
+        phone=phone,
+        location=location_str,
+        role="contractor",
+        specialisation="contractor",
+        verification_status="pending"
+    )
+    user.set_password(password)
+
+    db.session.add(user)
+    db.session.flush()
+
+    profile = ContractorProfile(
+        user_id=user.id,
+        company_name=company_name,
+        business_type=business_type,
+        gstin=gstin if gstin else None,
+        business_address=business_address if business_address else None,
+        city=city,
+        state=state,
+        verification_status="pending",
+        contact_email=email,
+        contact_phone=phone,
+        website=website if website else None,
+        description=description if description else None
+    )
+    db.session.add(profile)
+    db.session.commit()
+
+    token = generate_token(user.id, user.role)
+
+    return jsonify({
+        "status": "success",
+        "message": "Contractor account registered successfully. Your business verification is currently pending review.",
+        "token": token,
+        "user": user.to_dict()
+    }), 201
+
+
+@auth_bp.route("/contractor/login", methods=["POST"])
+def contractor_login():
+    return _authenticate_login(
+        allowed_roles=["contractor", "admin"],
+        invalid_msg="Invalid contractor email address or password.",
+        role_error_fn=lambda r: f"Account with role '{r}' cannot log into the Contractor Portal.",
+        success_msg="Contractor login successful.",
+    )
 
 
 # ============================================================================
@@ -1117,4 +1217,914 @@ def revoke_credential(credential_id):
         "status": "success",
         "message": f"Credential #{credential.credential_id} has been revoked.",
         "credential": credential.to_admin_dict()
+    }), 200
+
+
+# ============================================================================
+# PHASE 4: CONTRACTOR HUB & DIRECT HIRING MARKETPLACE ENDPOINTS
+# ============================================================================
+
+VALID_TRADES = [
+    "electrician",
+    "plumber",
+    "mason",
+    "carpenter",
+    "welder",
+    "painter",
+    "mechanic",
+    "technician"
+]
+
+
+# ----------------------------------------------------------------------------
+# Contractor Profile & Dashboard
+# ----------------------------------------------------------------------------
+
+@contractor_bp.route("/profile", methods=["GET"])
+@require_auth(allowed_roles=["contractor", "admin"])
+def get_contractor_profile():
+    profile = getattr(g.current_user, "contractor_profile", None)
+    if not profile:
+        profile = ContractorProfile.query.filter_by(user_id=g.current_user.id).first()
+
+    return jsonify({
+        "status": "success",
+        "user": g.current_user.to_dict(),
+        "profile": profile.to_dict() if profile else None
+    }), 200
+
+
+@contractor_bp.route("/profile", methods=["PUT"])
+@require_auth(allowed_roles=["contractor", "admin"])
+def update_contractor_profile():
+    data = request.get_json() or {}
+    profile = getattr(g.current_user, "contractor_profile", None)
+    if not profile:
+        profile = ContractorProfile.query.filter_by(user_id=g.current_user.id).first()
+        if not profile:
+            profile = ContractorProfile(
+                user_id=g.current_user.id,
+                company_name=data.get("company_name", g.current_user.full_name),
+                city=data.get("city", "Mumbai"),
+                state=data.get("state", "Maharashtra")
+            )
+            db.session.add(profile)
+
+    # Editable fields
+    if "company_name" in data and data["company_name"].strip():
+        profile.company_name = data["company_name"].strip()
+    if "business_type" in data:
+        profile.business_type = data["business_type"].strip()
+    if "gstin" in data:
+        profile.gstin = data["gstin"].strip() or None
+    if "business_address" in data:
+        profile.business_address = data["business_address"].strip() or None
+    if "city" in data and data["city"].strip():
+        profile.city = data["city"].strip()
+    if "state" in data and data["state"].strip():
+        profile.state = data["state"].strip()
+    if "contact_email" in data:
+        profile.contact_email = data["contact_email"].strip() or None
+    if "contact_phone" in data:
+        profile.contact_phone = data["contact_phone"].strip() or None
+    if "website" in data:
+        profile.website = data["website"].strip() or None
+    if "description" in data:
+        profile.description = data["description"].strip() or None
+
+    # Update base user fields
+    if "full_name" in data and data["full_name"].strip():
+        g.current_user.full_name = data["full_name"].strip()
+    if "phone" in data:
+        g.current_user.phone = data["phone"].strip() or None
+    if profile.city and profile.state:
+        g.current_user.location = f"{profile.city}, {profile.state}"
+
+    profile.updated_at = datetime.utcnow()
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": "Company profile updated successfully.",
+        "profile": profile.to_dict(),
+        "user": g.current_user.to_dict()
+    }), 200
+
+
+@contractor_bp.route("/dashboard", methods=["GET"])
+@require_auth(allowed_roles=["contractor", "admin"])
+def get_contractor_dashboard():
+    contractor_id = g.current_user.id
+    profile = getattr(g.current_user, "contractor_profile", None)
+
+    jobs = JobPosting.query.filter_by(contractor_id=contractor_id).order_by(JobPosting.created_at.desc()).all()
+    job_ids = [j.id for j in jobs]
+
+    total_jobs = len(jobs)
+    active_jobs = sum(1 for j in jobs if j.status == "active")
+    closed_jobs = sum(1 for j in jobs if j.status in ("closed", "paused"))
+
+    applications = []
+    if job_ids:
+        applications = JobApplication.query.filter(JobApplication.job_id.in_(job_ids)).order_by(JobApplication.applied_at.desc()).all()
+
+    total_applications = len(applications)
+    shortlisted_count = sum(1 for a in applications if a.status == "shortlisted")
+    hired_count = sum(1 for a in applications if a.status == "hired")
+
+    # Recent 5 applications with worker details
+    recent_apps = [a.to_dict(include_job=True, include_worker=True) for a in applications[:5]]
+    # Recent 5 jobs
+    recent_jobs = [j.to_dict(include_contractor=False, include_counts=True) for j in jobs[:5]]
+
+    return jsonify({
+        "status": "success",
+        "stats": {
+            "total_jobs": total_jobs,
+            "active_jobs": active_jobs,
+            "closed_jobs": closed_jobs,
+            "total_applications": total_applications,
+            "shortlisted_workers": shortlisted_count,
+            "hired_workers": hired_count,
+            "verification_status": profile.verification_status if profile else "pending",
+            "company_name": profile.company_name if profile else g.current_user.full_name
+        },
+        "recent_applications": recent_apps,
+        "recent_jobs": recent_jobs
+    }), 200
+
+
+# ----------------------------------------------------------------------------
+# Contractor Job Management
+# ----------------------------------------------------------------------------
+
+@contractor_bp.route("/jobs", methods=["GET"])
+@require_auth(allowed_roles=["contractor", "admin"])
+def list_contractor_jobs():
+    status = request.args.get("status", "").strip().lower()
+    query = JobPosting.query.filter_by(contractor_id=g.current_user.id)
+    if status and status != "all":
+        query = query.filter_by(status=status)
+
+    jobs = query.order_by(JobPosting.created_at.desc()).all()
+    return jsonify({
+        "status": "success",
+        "count": len(jobs),
+        "jobs": [j.to_dict(include_contractor=True, include_counts=True) for j in jobs]
+    }), 200
+
+
+@contractor_bp.route("/jobs", methods=["POST"])
+@require_auth(allowed_roles=["contractor", "admin"])
+def create_job():
+    data = request.get_json() or {}
+
+    title = data.get("title", "").strip()
+    trade = data.get("trade", "").strip().lower()
+    description = data.get("description", "").strip()
+    required_skills = data.get("required_skills", "").strip()
+    workers_needed = data.get("workers_needed", 1)
+    experience_years = data.get("experience_years", 0)
+    location = data.get("location", "").strip()
+    city = data.get("city", "").strip()
+    state = data.get("state", "").strip()
+    employment_type = data.get("employment_type", "Full-time").strip()
+    payment_type = data.get("payment_type", "Monthly").strip()
+    wage_min = data.get("wage_min")
+    wage_max = data.get("wage_max")
+    duration = data.get("duration", "").strip()
+    start_date = data.get("start_date", "").strip()
+    working_hours = data.get("working_hours", "").strip()
+    safety_requirements = data.get("safety_requirements", "").strip()
+    contact_details = data.get("contact_details", "").strip()
+
+    if not title or not trade or not description or not location or not city or not state:
+        return jsonify({
+            "status": "error",
+            "message": "Title, trade, description, location, city, and state are required."
+        }), 400
+
+    if trade not in VALID_TRADES:
+        return jsonify({
+            "status": "error",
+            "message": f"Invalid trade '{trade}'. Supported trades: {', '.join(VALID_TRADES)}."
+        }), 400
+
+    try:
+        wage_min_val = float(wage_min)
+        wage_max_val = float(wage_max)
+        if wage_min_val < 0 or wage_max_val < 0 or wage_min_val > wage_max_val:
+            return jsonify({
+                "status": "error",
+                "message": "Wage min must be non-negative and less than or equal to wage max."
+            }), 400
+    except (ValueError, TypeError):
+        return jsonify({
+            "status": "error",
+            "message": "Wage min and wage max must be valid numbers."
+        }), 400
+
+    try:
+        workers_needed_val = max(1, int(workers_needed))
+        experience_years_val = max(0, int(experience_years))
+    except (ValueError, TypeError):
+        workers_needed_val = 1
+        experience_years_val = 0
+
+    job = JobPosting(
+        contractor_id=g.current_user.id,
+        title=title,
+        trade=trade,
+        description=description,
+        required_skills=required_skills or None,
+        workers_needed=workers_needed_val,
+        experience_years=experience_years_val,
+        location=location,
+        city=city,
+        state=state,
+        employment_type=employment_type or "Full-time",
+        payment_type=payment_type or "Monthly",
+        wage_min=wage_min_val,
+        wage_max=wage_max_val,
+        duration=duration or None,
+        start_date=start_date or None,
+        working_hours=working_hours or None,
+        safety_requirements=safety_requirements or None,
+        contact_details=contact_details or None,
+        status="active"
+    )
+
+    db.session.add(job)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": "Job posting published successfully.",
+        "job": job.to_dict(include_contractor=True, include_counts=True)
+    }), 201
+
+
+@contractor_bp.route("/jobs/<int:job_id>", methods=["GET"])
+@require_auth(allowed_roles=["contractor", "admin"])
+def get_contractor_job(job_id):
+    job = db.session.get(JobPosting, job_id)
+    if not job:
+        return jsonify({"status": "error", "message": "Job posting not found."}), 404
+
+    # IDOR check
+    if job.contractor_id != g.current_user.id and not g.current_user.is_admin():
+        return jsonify({"status": "error", "message": "Access restricted. You do not own this job posting."}), 403
+
+    return jsonify({
+        "status": "success",
+        "job": job.to_dict(include_contractor=True, include_counts=True)
+    }), 200
+
+
+@contractor_bp.route("/jobs/<int:job_id>", methods=["PUT"])
+@require_auth(allowed_roles=["contractor", "admin"])
+def update_job(job_id):
+    job = db.session.get(JobPosting, job_id)
+    if not job:
+        return jsonify({"status": "error", "message": "Job posting not found."}), 404
+
+    # IDOR check
+    if job.contractor_id != g.current_user.id and not g.current_user.is_admin():
+        return jsonify({"status": "error", "message": "Access restricted. You cannot modify another contractor's job posting."}), 403
+
+    data = request.get_json() or {}
+
+    if "title" in data and data["title"].strip():
+        job.title = data["title"].strip()
+    if "trade" in data:
+        t = data["trade"].strip().lower()
+        if t in VALID_TRADES:
+            job.trade = t
+    if "description" in data and data["description"].strip():
+        job.description = data["description"].strip()
+    if "required_skills" in data:
+        job.required_skills = data["required_skills"].strip() or None
+    if "workers_needed" in data:
+        try:
+            job.workers_needed = max(1, int(data["workers_needed"]))
+        except (ValueError, TypeError):
+            pass
+    if "experience_years" in data:
+        try:
+            job.experience_years = max(0, int(data["experience_years"]))
+        except (ValueError, TypeError):
+            pass
+    if "location" in data and data["location"].strip():
+        job.location = data["location"].strip()
+    if "city" in data and data["city"].strip():
+        job.city = data["city"].strip()
+    if "state" in data and data["state"].strip():
+        job.state = data["state"].strip()
+    if "employment_type" in data:
+        job.employment_type = data["employment_type"].strip() or "Full-time"
+    if "payment_type" in data:
+        job.payment_type = data["payment_type"].strip() or "Monthly"
+    if "wage_min" in data or "wage_max" in data:
+        try:
+            wmin = float(data["wage_min"]) if "wage_min" in data else job.wage_min
+            wmax = float(data["wage_max"]) if "wage_max" in data else job.wage_max
+            if 0 <= wmin <= wmax:
+                job.wage_min = wmin
+                job.wage_max = wmax
+        except (ValueError, TypeError):
+            pass
+    if "duration" in data:
+        job.duration = data["duration"].strip() or None
+    if "start_date" in data:
+        job.start_date = data["start_date"].strip() or None
+    if "working_hours" in data:
+        job.working_hours = data["working_hours"].strip() or None
+    if "safety_requirements" in data:
+        job.safety_requirements = data["safety_requirements"].strip() or None
+    if "contact_details" in data:
+        job.contact_details = data["contact_details"].strip() or None
+
+    job.updated_at = datetime.utcnow()
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": "Job posting updated successfully.",
+        "job": job.to_dict(include_contractor=True, include_counts=True)
+    }), 200
+
+
+@contractor_bp.route("/jobs/<int:job_id>/status", methods=["PATCH"])
+@require_auth(allowed_roles=["contractor", "admin"])
+def set_job_status(job_id):
+    job = db.session.get(JobPosting, job_id)
+    if not job:
+        return jsonify({"status": "error", "message": "Job posting not found."}), 404
+
+    # IDOR check
+    if job.contractor_id != g.current_user.id and not g.current_user.is_admin():
+        return jsonify({"status": "error", "message": "Access restricted."}), 403
+
+    data = request.get_json() or {}
+    new_status = data.get("status", "").strip().lower()
+    if new_status not in ("active", "paused", "closed"):
+        return jsonify({
+            "status": "error",
+            "message": "Invalid status. Allowed values: active, paused, closed."
+        }), 400
+
+    job.status = new_status
+    job.updated_at = datetime.utcnow()
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": f"Job status updated to '{new_status}'.",
+        "job": job.to_dict(include_contractor=True, include_counts=True)
+    }), 200
+
+
+@contractor_bp.route("/jobs/<int:job_id>", methods=["DELETE"])
+@require_auth(allowed_roles=["contractor", "admin"])
+def delete_job(job_id):
+    job = db.session.get(JobPosting, job_id)
+    if not job:
+        return jsonify({"status": "error", "message": "Job posting not found."}), 404
+
+    # IDOR check
+    if job.contractor_id != g.current_user.id and not g.current_user.is_admin():
+        return jsonify({"status": "error", "message": "Access restricted."}), 403
+
+    db.session.delete(job)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": "Job posting deleted successfully."
+    }), 200
+
+
+# ----------------------------------------------------------------------------
+# Contractor Applications Management
+# ----------------------------------------------------------------------------
+
+@contractor_bp.route("/jobs/<int:job_id>/applications", methods=["GET"])
+@require_auth(allowed_roles=["contractor", "admin"])
+def get_job_applications(job_id):
+    job = db.session.get(JobPosting, job_id)
+    if not job:
+        return jsonify({"status": "error", "message": "Job posting not found."}), 404
+
+    # IDOR check
+    if job.contractor_id != g.current_user.id and not g.current_user.is_admin():
+        return jsonify({"status": "error", "message": "Access restricted."}), 403
+
+    applications = JobApplication.query.filter_by(job_id=job_id).order_by(JobApplication.applied_at.desc()).all()
+    return jsonify({
+        "status": "success",
+        "job_title": job.title,
+        "count": len(applications),
+        "applications": [a.to_dict(include_job=False, include_worker=True) for a in applications]
+    }), 200
+
+
+@contractor_bp.route("/applications", methods=["GET"])
+@require_auth(allowed_roles=["contractor", "admin"])
+def list_all_contractor_applications():
+    job_ids = [j.id for j in JobPosting.query.filter_by(contractor_id=g.current_user.id).all()]
+    if not job_ids:
+        return jsonify({"status": "success", "count": 0, "applications": []}), 200
+
+    status = request.args.get("status", "").strip().lower()
+    query = JobApplication.query.filter(JobApplication.job_id.in_(job_ids))
+    if status and status != "all":
+        query = query.filter_by(status=status)
+
+    applications = query.order_by(JobApplication.applied_at.desc()).all()
+    return jsonify({
+        "status": "success",
+        "count": len(applications),
+        "applications": [a.to_dict(include_job=True, include_worker=True) for a in applications]
+    }), 200
+
+
+@contractor_bp.route("/applications/<int:app_id>/status", methods=["PATCH"])
+@require_auth(allowed_roles=["contractor", "admin"])
+def update_application_status(app_id):
+    application = db.session.get(JobApplication, app_id)
+    if not application:
+        return jsonify({"status": "error", "message": "Application not found."}), 404
+
+    # IDOR check: ensure the contractor owns the job this application is for
+    if application.job.contractor_id != g.current_user.id and not g.current_user.is_admin():
+        return jsonify({"status": "error", "message": "Access restricted. You do not own the job posting for this application."}), 403
+
+    data = request.get_json() or {}
+    new_status = data.get("status", "").strip().lower()
+    allowed_statuses = ("applied", "under_review", "shortlisted", "rejected", "hired")
+    if new_status not in allowed_statuses:
+        return jsonify({
+            "status": "error",
+            "message": f"Invalid status. Allowed values: {', '.join(allowed_statuses)}."
+        }), 400
+
+    application.status = new_status
+    application.updated_at = datetime.utcnow()
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": f"Application status updated to '{new_status}'.",
+        "application": application.to_dict(include_job=True, include_worker=True)
+    }), 200
+
+
+# ----------------------------------------------------------------------------
+# Verified Worker Discovery Marketplace
+# ----------------------------------------------------------------------------
+
+@contractor_bp.route("/workers", methods=["GET"])
+@require_auth(allowed_roles=["contractor", "admin"])
+def discover_verified_workers():
+    trade = request.args.get("trade", "").strip().lower()
+    city = request.args.get("city", "").strip().lower()
+    state = request.args.get("state", "").strip().lower()
+    query_str = request.args.get("q", "").strip().lower()
+    min_exp = request.args.get("min_experience", "")
+
+    # Query workers from User table
+    workers_query = User.query.filter_by(role="worker")
+
+    if trade and trade != "all":
+        workers_query = workers_query.filter(User.specialisation.ilike(f"%{trade}%"))
+
+    if city:
+        workers_query = workers_query.filter(User.location.ilike(f"%{city}%"))
+
+    if state:
+        workers_query = workers_query.filter(User.location.ilike(f"%{state}%"))
+
+    if min_exp:
+        try:
+            exp_val = int(min_exp)
+            workers_query = workers_query.filter(User.years_of_experience >= exp_val)
+        except (ValueError, TypeError):
+            pass
+
+    workers = workers_query.order_by(User.years_of_experience.desc()).all()
+
+    results = []
+    for w in workers:
+        # Match text query if provided
+        if query_str:
+            target_text = f"{w.full_name} {w.specialisation or ''} {w.location or ''} {w.professional_qualification or ''}".lower()
+            if query_str not in target_text:
+                continue
+
+        # Check for active verified Digital Skill Passport credential
+        cred = SkillCredential.query.filter_by(worker_id=w.id, status="active").first()
+
+        # Check latest approved submission review score if exists
+        submission = AssessmentSubmission.query.filter_by(worker_id=w.id, status="approved").order_by(AssessmentSubmission.id.desc()).first()
+        score_info = None
+        if submission and submission.reviews:
+            rev = submission.reviews[0]
+            score_info = {
+                "score": rev.total_score,
+                "max_score": rev.maximum_score,
+                "percentage": round((rev.total_score / rev.maximum_score * 100), 1) if rev.maximum_score else None
+            }
+
+        worker_entry = {
+            "id": w.id,
+            "full_name": w.full_name,
+            "trade": w.specialisation or "electrician",
+            "years_of_experience": w.years_of_experience or 0,
+            "location": w.location or "India",
+            "professional_qualification": w.professional_qualification,
+            "is_verified": cred is not None or (w.verification_status in ("approved", "verified")),
+            "has_skill_passport": cred is not None,
+            "credential_id": cred.credential_id if cred else None,
+            "verification_token": cred.verification_token if cred else None,
+            "verification_url": f"https://ayush35099-cloud.github.io/SkillSetu/verify/{cred.verification_token}" if cred else None,
+            "skill_level": cred.skill_level if cred else ("Verified Candidate" if (submission and submission.status == "approved") else "Candidate"),
+            "assessment_score": score_info
+        }
+        results.append(worker_entry)
+
+    return jsonify({
+        "status": "success",
+        "count": len(results),
+        "workers": results
+    }), 200
+
+
+# ----------------------------------------------------------------------------
+# Worker-Contractor Safe Contact Requests
+# ----------------------------------------------------------------------------
+
+@contractor_bp.route("/contact-requests", methods=["POST"])
+@require_auth(allowed_roles=["contractor", "admin"])
+def send_contact_request():
+    data = request.get_json() or {}
+    worker_id = data.get("worker_id")
+    job_id = data.get("job_id")
+    message = data.get("message", "").strip()
+
+    if not worker_id or not message:
+        return jsonify({
+            "status": "error",
+            "message": "Worker ID and message are required."
+        }), 400
+
+    worker = db.session.get(User, worker_id)
+    if not worker or worker.role != "worker":
+        return jsonify({
+            "status": "error",
+            "message": "Target worker account not found."
+        }), 404
+
+    # Optional job validation
+    if job_id:
+        job = db.session.get(JobPosting, job_id)
+        if not job or (job.contractor_id != g.current_user.id and not g.current_user.is_admin()):
+            job_id = None
+
+    # Check if duplicate pending request exists
+    existing = ContactRequest.query.filter_by(
+        contractor_id=g.current_user.id,
+        worker_id=worker_id,
+        status="pending"
+    ).first()
+    if existing:
+        return jsonify({
+            "status": "error",
+            "message": "A pending contact request has already been sent to this worker."
+        }), 409
+
+    contact_req = ContactRequest(
+        contractor_id=g.current_user.id,
+        worker_id=worker_id,
+        job_id=job_id,
+        message=message,
+        status="pending"
+    )
+    db.session.add(contact_req)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": f"Interview request sent to {worker.full_name}.",
+        "contact_request": contact_req.to_dict()
+    }), 201
+
+
+@contractor_bp.route("/contact-requests", methods=["GET"])
+@require_auth(allowed_roles=["contractor", "admin"])
+def list_contractor_contact_requests():
+    requests = ContactRequest.query.filter_by(contractor_id=g.current_user.id).order_by(ContactRequest.created_at.desc()).all()
+    return jsonify({
+        "status": "success",
+        "count": len(requests),
+        "contact_requests": [cr.to_dict() for cr in requests]
+    }), 200
+
+
+# ============================================================================
+# WORKER JOBS & APPLICATIONS ENDPOINTS
+# ============================================================================
+
+@worker_bp.route("/jobs", methods=["GET"])
+def browse_active_jobs():
+    """Public / Worker endpoint to search active verified contractor job postings."""
+    trade = request.args.get("trade", "").strip().lower()
+    city = request.args.get("city", "").strip().lower()
+    state = request.args.get("state", "").strip().lower()
+    employment_type = request.args.get("employment_type", "").strip()
+    query_str = request.args.get("q", "").strip().lower()
+
+    query = JobPosting.query.filter_by(status="active")
+
+    if trade and trade != "all":
+        query = query.filter_by(trade=trade)
+    if city:
+        query = query.filter(JobPosting.city.ilike(f"%{city}%"))
+    if state:
+        query = query.filter(JobPosting.state.ilike(f"%{state}%"))
+    if employment_type and employment_type != "all":
+        query = query.filter(JobPosting.employment_type.ilike(f"%{employment_type}%"))
+
+    jobs = query.order_by(JobPosting.created_at.desc()).all()
+
+    if query_str:
+        filtered = []
+        for j in jobs:
+            haystack = f"{j.title} {j.description} {j.required_skills or ''} {j.city} {j.state} {j.trade}".lower()
+            if query_str in haystack:
+                filtered.append(j)
+        jobs = filtered
+
+    return jsonify({
+        "status": "success",
+        "count": len(jobs),
+        "jobs": [j.to_dict(include_contractor=True, include_counts=True) for j in jobs]
+    }), 200
+
+
+@worker_bp.route("/jobs/<int:job_id>", methods=["GET"])
+def get_job_detail(job_id):
+    job = db.session.get(JobPosting, job_id)
+    if not job:
+        return jsonify({"status": "error", "message": "Job posting not found."}), 404
+
+    return jsonify({
+        "status": "success",
+        "job": job.to_dict(include_contractor=True, include_counts=True)
+    }), 200
+
+
+@worker_bp.route("/jobs/<int:job_id>/apply", methods=["POST"])
+@require_auth(allowed_roles=["worker", "admin"])
+def apply_to_job(job_id):
+    job = db.session.get(JobPosting, job_id)
+    if not job:
+        return jsonify({"status": "error", "message": "Job posting not found."}), 404
+
+    if job.status != "active":
+        return jsonify({
+            "status": "error",
+            "message": f"This job posting is currently {job.status} and is no longer accepting applications."
+        }), 400
+
+    # Prevent duplicate applications
+    existing = JobApplication.query.filter_by(job_id=job_id, worker_id=g.current_user.id).first()
+    if existing:
+        return jsonify({
+            "status": "error",
+            "message": "You have already applied for this job posting.",
+            "application": existing.to_dict(include_job=True, include_worker=False)
+        }), 409
+
+    data = request.get_json() or {}
+    cover_note = data.get("cover_note", "").strip()
+
+    application = JobApplication(
+        job_id=job_id,
+        worker_id=g.current_user.id,
+        cover_note=cover_note or None,
+        status="applied"
+    )
+    db.session.add(application)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": f"Application submitted successfully for '{job.title}'.",
+        "application": application.to_dict(include_job=True, include_worker=True)
+    }), 201
+
+
+@worker_bp.route("/applications", methods=["GET"])
+@require_auth(allowed_roles=["worker", "admin"])
+def get_my_job_applications():
+    applications = JobApplication.query.filter_by(worker_id=g.current_user.id).order_by(JobApplication.applied_at.desc()).all()
+    return jsonify({
+        "status": "success",
+        "count": len(applications),
+        "applications": [a.to_dict(include_job=True, include_worker=False) for a in applications]
+    }), 200
+
+
+@worker_bp.route("/applications/<int:app_id>/withdraw", methods=["PATCH"])
+@require_auth(allowed_roles=["worker", "admin"])
+def withdraw_application(app_id):
+    application = db.session.get(JobApplication, app_id)
+    if not application:
+        return jsonify({"status": "error", "message": "Application not found."}), 404
+
+    if application.worker_id != g.current_user.id and not g.current_user.is_admin():
+        return jsonify({"status": "error", "message": "Access restricted. You can only withdraw your own applications."}), 403
+
+    if application.status == "withdrawn":
+        return jsonify({"status": "error", "message": "Application has already been withdrawn."}), 400
+
+    application.status = "withdrawn"
+    application.updated_at = datetime.utcnow()
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": "Application withdrawn successfully.",
+        "application": application.to_dict(include_job=True, include_worker=False)
+    }), 200
+
+
+@worker_bp.route("/contact-requests", methods=["GET"])
+@require_auth(allowed_roles=["worker", "admin"])
+def get_worker_contact_requests():
+    requests = ContactRequest.query.filter_by(worker_id=g.current_user.id).order_by(ContactRequest.created_at.desc()).all()
+    return jsonify({
+        "status": "success",
+        "count": len(requests),
+        "contact_requests": [cr.to_dict() for cr in requests]
+    }), 200
+
+
+@worker_bp.route("/contact-requests/<int:request_id>/respond", methods=["PATCH"])
+@require_auth(allowed_roles=["worker", "admin"])
+def respond_to_contact_request(request_id):
+    contact_req = db.session.get(ContactRequest, request_id)
+    if not contact_req:
+        return jsonify({"status": "error", "message": "Contact request not found."}), 404
+
+    if contact_req.worker_id != g.current_user.id and not g.current_user.is_admin():
+        return jsonify({"status": "error", "message": "Access restricted."}), 403
+
+    data = request.get_json() or {}
+    action = data.get("action", "").strip().lower()
+    share_contact = data.get("share_contact", True)
+
+    if action not in ("accept", "decline"):
+        return jsonify({
+            "status": "error",
+            "message": "Action must be either 'accept' or 'decline'."
+        }), 400
+
+    if action == "accept":
+        contact_req.status = "accepted"
+        contact_req.worker_contact_shared = bool(share_contact)
+    else:
+        contact_req.status = "declined"
+        contact_req.worker_contact_shared = False
+
+    contact_req.responded_at = datetime.utcnow()
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": f"Contact request has been {contact_req.status}.",
+        "contact_request": contact_req.to_dict()
+    }), 200
+
+
+# ============================================================================
+# ADMIN CONTRACTOR GOVERNANCE & MODERATION
+# ============================================================================
+
+@admin_bp.route("/contractors", methods=["GET"])
+@require_auth(allowed_roles=["admin"])
+def admin_list_contractors():
+    status = request.args.get("status", "").strip().lower()
+
+    contractor_users = User.query.filter_by(role="contractor").order_by(User.created_at.desc()).all()
+
+    results = []
+    for u in contractor_users:
+        prof = u.contractor_profile
+        v_status = prof.verification_status if prof else u.verification_status
+
+        if status and status != "all" and v_status != status:
+            continue
+
+        job_count = JobPosting.query.filter_by(contractor_id=u.id).count()
+
+        results.append({
+            "id": u.id,
+            "full_name": u.full_name,
+            "email": u.email,
+            "phone": u.phone,
+            "location": u.location,
+            "verification_status": v_status,
+            "company_name": prof.company_name if prof else u.full_name,
+            "business_type": prof.business_type if prof else "General Contractor",
+            "gstin": prof.gstin if prof else None,
+            "city": prof.city if prof else "",
+            "state": prof.state if prof else "",
+            "website": prof.website if prof else None,
+            "description": prof.description if prof else None,
+            "total_jobs": job_count,
+            "created_at": u.created_at.isoformat() if u.created_at else None
+        })
+
+    return jsonify({
+        "status": "success",
+        "count": len(results),
+        "contractors": results
+    }), 200
+
+
+@admin_bp.route("/contractors/<int:contractor_id>/verify", methods=["PATCH"])
+@require_auth(allowed_roles=["admin"])
+def admin_verify_contractor(contractor_id):
+    user = db.session.get(User, contractor_id)
+    if not user or user.role != "contractor":
+        return jsonify({"status": "error", "message": "Contractor account not found."}), 404
+
+    data = request.get_json() or {}
+    new_status = data.get("status", "").strip().lower()
+    reason = data.get("reason", "").strip()
+
+    if new_status not in ("verified", "rejected", "pending"):
+        return jsonify({
+            "status": "error",
+            "message": "Status must be 'verified', 'rejected', or 'pending'."
+        }), 400
+
+    user.verification_status = new_status
+    prof = user.contractor_profile
+    if prof:
+        prof.verification_status = new_status
+        if new_status == "verified":
+            prof.verified_at = datetime.utcnow()
+            prof.rejection_reason = None
+        elif new_status == "rejected":
+            prof.rejection_reason = reason or "Verification criteria not met"
+        else:
+            prof.verified_at = None
+            prof.rejection_reason = None
+
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": f"Contractor '{prof.company_name if prof else user.full_name}' verification set to '{new_status}'.",
+        "user": user.to_dict()
+    }), 200
+
+
+@admin_bp.route("/jobs", methods=["GET"])
+@require_auth(allowed_roles=["admin"])
+def admin_list_jobs():
+    trade = request.args.get("trade", "").strip().lower()
+    status = request.args.get("status", "").strip().lower()
+
+    query = JobPosting.query
+    if trade and trade != "all":
+        query = query.filter_by(trade=trade)
+    if status and status != "all":
+        query = query.filter_by(status=status)
+
+    jobs = query.order_by(JobPosting.created_at.desc()).all()
+
+    return jsonify({
+        "status": "success",
+        "count": len(jobs),
+        "jobs": [j.to_dict(include_contractor=True, include_counts=True) for j in jobs]
+    }), 200
+
+
+@admin_bp.route("/jobs/<int:job_id>", methods=["DELETE"])
+@require_auth(allowed_roles=["admin"])
+def admin_moderate_job(job_id):
+    job = db.session.get(JobPosting, job_id)
+    if not job:
+        return jsonify({"status": "error", "message": "Job posting not found."}), 404
+
+    job_title = job.title
+    db.session.delete(job)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": f"Job posting '{job_title}' successfully removed by administrator."
     }), 200

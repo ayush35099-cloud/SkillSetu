@@ -26,6 +26,7 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
 
   const isWorkerPortal = location.pathname.startsWith('/worker');
   const isAssessorPortal = location.pathname.startsWith('/assessor');
+  const isContractorPortal = location.pathname.startsWith('/contractor');
   const isHome = location.pathname === '/';
 
   const handleNavAnchor = (e, anchorId) => {
@@ -114,16 +115,21 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
               <span>Assessor Portal</span>
             </Link>
 
-            <a 
-              href="#system-status" 
-              onClick={(e) => handleNavAnchor(e, 'system-status')} 
-              className="hover:text-terracotta dark:hover:text-amber-300 transition-colors"
+            {/* Contractor Portal Link */}
+            <Link
+              to="/contractor"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                isContractorPortal
+                  ? 'bg-teal text-white shadow-xs'
+                  : 'bg-teal-50 dark:bg-teal-950/40 text-teal-900 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/60 border border-teal-200/80 dark:border-teal-800/40'
+              }`}
             >
-              {t('nav.status', 'API Status')}
-            </a>
+              <Briefcase className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+              <span>Contractor Hub</span>
+            </Link>
           </nav>
 
-          {/* Controls: Region, Language, Theme, API Pill, Login, CTA */}
+          {/* Controls: Region, Language, Theme, Login, CTA */}
           <div className="flex items-center gap-2 sm:gap-2.5">
             
             {/* Region Selector Button (Searchable Indian States/UTs) */}
@@ -150,36 +156,6 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
 
             {/* Accessible Theme Switcher (Light / Dark / System) */}
             <ThemeSwitcher compact={true} />
-
-            {/* Backend Status Indicator Pill */}
-            <div 
-              onClick={onRefreshStatus}
-              title="Click to check backend status"
-              className={`cursor-pointer inline-flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                backendStatus === 'connected'
-                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100'
-                  : backendStatus === 'checking'
-                  ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700'
-                  : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-700 hover:bg-rose-100'
-              }`}
-            >
-              {backendStatus === 'connected' ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span className="hidden lg:inline text-[11px]">API Live</span>
-                </>
-              ) : backendStatus === 'checking' ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600" />
-                  <span className="hidden lg:inline text-[11px]">Checking</span>
-                </>
-              ) : (
-                <>
-                  <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
-                  <span className="hidden lg:inline text-[11px]">Offline</span>
-                </>
-              )}
-            </div>
 
             {/* Login Button */}
             <button
@@ -261,13 +237,23 @@ export default function Navbar({ backendStatus, onRefreshStatus, onOpenLogin }) 
                 Assessor Login
               </span>
             </Link>
-            <a
-              href="#system-status"
-              onClick={(e) => handleNavAnchor(e, 'system-status')}
-              className="px-3 py-2.5 rounded-xl text-sm font-semibold text-teal dark:text-ivory hover:bg-beige/40 dark:hover:bg-charcoal-800 transition-colors flex items-center justify-between"
+            <Link
+              to="/contractor"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`px-3 py-2.5 rounded-xl text-sm font-bold flex items-center justify-between transition-colors ${
+                isContractorPortal 
+                  ? 'bg-teal-700 text-white' 
+                  : 'text-teal dark:text-ivory hover:bg-beige/40 dark:hover:bg-charcoal-800'
+              }`}
             >
-              <span>{t('nav.status', 'API Status')}</span>
-            </a>
+              <div className="flex items-center gap-2">
+                <Briefcase className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                <span>Contractor Hub</span>
+              </div>
+              <span className="text-xs bg-teal-500/20 text-teal-700 dark:text-teal-300 px-2 py-0.5 rounded-full font-bold">
+                Hire Workers
+              </span>
+            </Link>
           </div>
 
           {/* Mobile Region & Theme Quick Bar */}

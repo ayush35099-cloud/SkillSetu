@@ -131,6 +131,18 @@ export const VERIFIED_INDIAN_PHOTOS = {
     caption: 'Engine compression diagnostics, brake caliper and electrical overhaul',
     trade: 'mechanic'
   },
+  trade_technician: {
+    id: 'istock-1369703445',
+    url: `${import.meta.env.BASE_URL}images/electrician-technician.webp`,
+    fallbackJpg: `${import.meta.env.BASE_URL}images/electrician-technician.jpg`,
+    originalJpg: `${import.meta.env.BASE_URL}images/electrician-technician-original.jpg`,
+    alt: 'Indian electrical technician and engineer operating a laptop to diagnose a power control panel',
+    credit: 'lakshmiprasad S / iStock',
+    resolution: '1024x682',
+    location: 'Electrical Control Panel Diagnostics',
+    caption: 'High-voltage control panel troubleshooting, digital diagnostics and technician calibration',
+    trade: 'technician'
+  },
   trade_other: {
     id: 'pexels-31321047',
     url: 'https://images.pexels.com/photos/31321047/pexels-photo-31321047.jpeg',

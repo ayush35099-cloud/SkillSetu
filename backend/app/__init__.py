@@ -50,6 +50,7 @@ def create_app(config_class=Config):
         task_bp,
         assessor_bp,
         worker_bp,
+        contractor_bp,
         admin_bp,
     )
     app.register_blueprint(main_bp)
@@ -58,6 +59,7 @@ def create_app(config_class=Config):
     app.register_blueprint(task_bp)
     app.register_blueprint(assessor_bp)
     app.register_blueprint(worker_bp)
+    app.register_blueprint(contractor_bp)
     app.register_blueprint(admin_bp)
 
     # Error handlers

@@ -23,7 +23,8 @@ import {
   AlertTriangle,
   Globe2,
   HelpCircle,
-  UserCheck
+  UserCheck,
+  Briefcase
 } from 'lucide-react';
 
 export default function WorkerLayout() {
@@ -75,6 +76,12 @@ export default function WorkerLayout() {
       end: false,
       label: t('worker.nav.skills', 'Skills & Verification'),
       icon: Award,
+    },
+    {
+      to: '/worker/jobs',
+      end: false,
+      label: 'Jobs & Hiring',
+      icon: Briefcase,
     },
     {
       to: '/worker/passport',

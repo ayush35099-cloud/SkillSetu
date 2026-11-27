@@ -15,7 +15,9 @@ import {
   Award,
   QrCode,
   ExternalLink,
-  Ban
+  Ban,
+  Building2,
+  Trash2
 } from 'lucide-react';
 
 export default function AdminAssessors() {
@@ -33,6 +35,12 @@ export default function AdminAssessors() {
   const [credentials, setCredentials] = useState([]);
   const [approvedSubmissions, setApprovedSubmissions] = useState([]);
   const [loadingPassports, setLoadingPassports] = useState(true);
+
+  // Contractors & Jobs state
+  const [contractors, setContractors] = useState([]);
+  const [loadingContractors, setLoadingContractors] = useState(true);
+  const [adminJobs, setAdminJobs] = useState([]);
+  const [loadingAdminJobs, setLoadingAdminJobs] = useState(true);
 
   const [error, setError] = useState(null);
   const [actionMessage, setActionMessage] = useState(null);
@@ -82,15 +90,71 @@ export default function AdminAssessors() {
     }
   };
 
+  const fetchContractorsData = async () => {
+    setLoadingContractors(true);
+    setLoadingAdminJobs(true);
+    try {
+      const [cRes, jRes] = await Promise.allSettled([
+        apiService.getAdminContractors(),
+        apiService.getAdminJobs()
+      ]);
+      if (cRes.status === 'fulfilled' && cRes.value?.contractors) {
+        setContractors(cRes.value.contractors);
+      }
+      if (jRes.status === 'fulfilled' && jRes.value?.jobs) {
+        setAdminJobs(jRes.value.jobs);
+      }
+    } catch (err) {
+      console.warn('Could not fetch contractors data:', err);
+    } finally {
+      setLoadingContractors(false);
+      setLoadingAdminJobs(false);
+    }
+  };
+
   useEffect(() => {
     if (isAdmin) {
       fetchAssessors();
       fetchPassportsData();
+      fetchContractorsData();
     } else {
       setLoadingAssessors(false);
       setLoadingPassports(false);
+      setLoadingContractors(false);
+      setLoadingAdminJobs(false);
     }
   }, [isAdmin]);
+
+  const handleVerifyContractor = async (id, status) => {
+    setProcessingId(`contractor-${id}`);
+    setActionMessage(null);
+    setError(null);
+    try {
+      const res = await apiService.verifyAdminContractor(id, status);
+      setActionMessage(res.message || `Contractor status set to ${status}.`);
+      fetchContractorsData();
+    } catch (err) {
+      setError(err.message || 'Failed to update contractor verification.');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleDeleteJob = async (jobId) => {
+    if (!window.confirm('Are you sure you want to remove this job posting from the platform?')) return;
+    setProcessingId(`job-${jobId}`);
+    setActionMessage(null);
+    setError(null);
+    try {
+      const res = await apiService.deleteAdminJob(jobId);
+      setActionMessage(res.message || 'Job posting removed by administrator.');
+      fetchContractorsData();
+    } catch (err) {
+      setError(err.message || 'Failed to delete job posting.');
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   const handleApproveAssessor = async (id) => {
     setProcessingId(id);
@@ -300,6 +364,19 @@ export default function AdminAssessors() {
             >
               <ShieldCheck className="w-4 h-4" />
               <span>Assessor Accreditation ({assessors.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('contractors')}
+              className={`pb-3 px-4 font-bold text-xs sm:text-sm border-b-2 transition-colors flex items-center gap-2 ${
+                activeTab === 'contractors'
+                  ? 'border-terracotta text-terracotta'
+                  : 'border-transparent text-greygreen hover:text-teal dark:text-ivory/60 dark:hover:text-ivory'
+              }`}
+            >
+              <Building2 className="w-4 h-4" />
+              <span>Contractors & Jobs ({contractors.length})</span>
             </button>
           </div>
 
@@ -573,6 +650,212 @@ export default function AdminAssessors() {
                   })}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* TAB 3: CONTRACTOR HUB & JOB MODERATION */}
+          {activeTab === 'contractors' && (
+            <div className="space-y-8">
+              {/* SECTION A: CONTRACTOR VERIFICATION */}
+              <div className="bg-white dark:bg-charcoal-800 rounded-3xl p-6 sm:p-8 border border-beige dark:border-charcoal-700 shadow-sm space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-beige dark:border-charcoal-700 gap-2">
+                  <div>
+                    <h3 className="text-base font-bold text-teal dark:text-ivory font-heading flex items-center gap-2">
+                      <Building2 className="w-5 h-5 text-terracotta" />
+                      Contractor Organization Governance ({contractors.length})
+                    </h3>
+                    <p className="text-xs text-greygreen dark:text-ivory/60 mt-0.5">
+                      Verify company credentials, GSTIN validity, and authorize direct hiring on SkillSetu
+                    </p>
+                  </div>
+                  <span className="text-xs px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 font-bold self-start sm:self-auto">
+                    {contractors.filter(c => c.verification_status === 'pending').length} Pending Review
+                  </span>
+                </div>
+
+                {loadingContractors ? (
+                  <div className="py-12 text-center text-greygreen dark:text-ivory/60 text-xs flex flex-col items-center justify-center gap-2">
+                    <RefreshCw className="w-5 h-5 animate-spin text-terracotta" />
+                    <span>Loading registered contractor profiles...</span>
+                  </div>
+                ) : contractors.length === 0 ? (
+                  <div className="py-10 text-center text-greygreen dark:text-ivory/60 text-sm">
+                    No contractors registered on the platform yet.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4">
+                    {contractors.map((c) => {
+                      const isProc = processingId === `contractor-${c.id}`;
+                      const status = c.verification_status || 'pending';
+                      return (
+                        <div
+                          key={c.id}
+                          className="p-5 rounded-2xl border border-beige/80 dark:border-charcoal-700 bg-sand-50/50 dark:bg-charcoal-900/40 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                        >
+                          <div className="space-y-1.5 min-w-0">
+                            <div className="flex items-center gap-2.5 flex-wrap">
+                              <h4 className="font-bold text-sm text-teal dark:text-ivory">
+                                {c.company_name || 'Organization Details Pending'}
+                              </h4>
+                              <span
+                                className={`text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-0.5 rounded-full ${
+                                  status === 'verified'
+                                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                    : status === 'rejected'
+                                    ? 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300'
+                                    : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                                }`}
+                              >
+                                {status}
+                              </span>
+                              {c.business_type && (
+                                <span className="text-[10px] px-2 py-0.5 rounded-md bg-sand-200/80 dark:bg-charcoal-700 text-greygreen dark:text-ivory/80 font-medium">
+                                  {c.business_type}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="text-xs text-greygreen dark:text-ivory/70 flex flex-wrap gap-x-4 gap-y-1">
+                              <span><strong>Contact:</strong> {c.name} ({c.email})</span>
+                              {c.phone && <span><strong>Phone:</strong> {c.phone}</span>}
+                              {(c.city || c.state) && (
+                                <span><strong>Location:</strong> {[c.city, c.state].filter(Boolean).join(', ')}</span>
+                              )}
+                            </div>
+
+                            <div className="text-xs text-greygreen dark:text-ivory/60 flex flex-wrap gap-x-4 gap-y-1 pt-0.5">
+                              <span>
+                                <strong>GSTIN:</strong>{' '}
+                                <span className="font-mono bg-sand-200/60 dark:bg-charcoal-800 px-1.5 py-0.5 rounded">
+                                  {c.gstin || 'Not Provided'}
+                                </span>
+                              </span>
+                              <span><strong>Active Jobs:</strong> {c.active_jobs_count || 0}</span>
+                              {c.created_at && (
+                                <span><strong>Joined:</strong> {new Date(c.created_at).toLocaleDateString()}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-beige/60 dark:border-charcoal-700">
+                            {status !== 'verified' && (
+                              <button
+                                type="button"
+                                onClick={() => handleVerifyContractor(c.id, 'verified')}
+                                disabled={isProc}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-all active:scale-95 disabled:opacity-50"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>{isProc ? 'Saving...' : 'Verify Contractor'}</span>
+                              </button>
+                            )}
+                            {status !== 'rejected' && (
+                              <button
+                                type="button"
+                                onClick={() => handleVerifyContractor(c.id, 'rejected')}
+                                disabled={isProc}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-950/60 dark:text-red-300 dark:hover:bg-red-900/60 font-bold text-xs transition-all active:scale-95 disabled:opacity-50"
+                              >
+                                <XCircle className="w-3.5 h-3.5" />
+                                <span>Reject / Suspend</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* SECTION B: PLATFORM JOB POSTING MODERATION */}
+              <div className="bg-white dark:bg-charcoal-800 rounded-3xl p-6 sm:p-8 border border-beige dark:border-charcoal-700 shadow-sm space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-beige dark:border-charcoal-700 gap-2">
+                  <div>
+                    <h3 className="text-base font-bold text-teal dark:text-ivory font-heading flex items-center gap-2">
+                      <Briefcase className="w-5 h-5 text-terracotta" />
+                      Platform Job Postings Moderation ({adminJobs.length})
+                    </h3>
+                    <p className="text-xs text-greygreen dark:text-ivory/60 mt-0.5">
+                      Audit all active, paused and closed job listings across India. Remove fraudulent or wage-exploitative postings.
+                    </p>
+                  </div>
+                </div>
+
+                {loadingAdminJobs ? (
+                  <div className="py-12 text-center text-greygreen dark:text-ivory/60 text-xs flex flex-col items-center justify-center gap-2">
+                    <RefreshCw className="w-5 h-5 animate-spin text-terracotta" />
+                    <span>Loading platform job postings...</span>
+                  </div>
+                ) : adminJobs.length === 0 ? (
+                  <div className="py-10 text-center text-greygreen dark:text-ivory/60 text-sm">
+                    No job postings found on the platform.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4">
+                    {adminJobs.map((j) => {
+                      const isProc = processingId === `job-${j.id}`;
+                      return (
+                        <div
+                          key={j.id}
+                          className="p-5 rounded-2xl border border-beige/80 dark:border-charcoal-700 bg-sand-50/50 dark:bg-charcoal-900/40 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                        >
+                          <div className="space-y-1.5 min-w-0">
+                            <div className="flex items-center gap-2.5 flex-wrap">
+                              <h4 className="font-bold text-sm text-teal dark:text-ivory">
+                                {j.title}
+                              </h4>
+                              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-sand-200 dark:bg-charcoal-700 text-teal dark:text-ivory">
+                                {j.trade}
+                              </span>
+                              <span
+                                className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
+                                  j.status === 'active'
+                                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                    : j.status === 'paused'
+                                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                                    : 'bg-sand-200 text-greygreen dark:bg-charcoal-700 dark:text-ivory/60'
+                                }`}
+                              >
+                                {j.status}
+                              </span>
+                            </div>
+
+                            <div className="text-xs text-greygreen dark:text-ivory/70 flex flex-wrap gap-x-4 gap-y-1">
+                              <span><strong>Company:</strong> {j.company_name || j.contractor_name}</span>
+                              <span><strong>Location:</strong> {[j.city, j.state].filter(Boolean).join(', ')}</span>
+                              <span>
+                                <strong>Wage:</strong> ₹{j.wage_min?.toLocaleString()} - ₹{j.wage_max?.toLocaleString()} / {j.wage_type}
+                              </span>
+                            </div>
+
+                            <div className="text-xs text-greygreen dark:text-ivory/60 flex flex-wrap gap-x-4 gap-y-1">
+                              <span><strong>Openings:</strong> {j.openings}</span>
+                              <span><strong>Applications:</strong> {j.applications_count || 0}</span>
+                              {j.created_at && (
+                                <span><strong>Posted:</strong> {new Date(j.created_at).toLocaleDateString()}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-beige/60 dark:border-charcoal-700">
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteJob(j.id)}
+                              disabled={isProc}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-950/60 dark:text-red-300 dark:hover:bg-red-900/60 font-bold text-xs transition-all active:scale-95 disabled:opacity-50"
+                              title="Remove fraudulent or non-compliant job posting"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>{isProc ? 'Removing...' : 'Remove Listing'}</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

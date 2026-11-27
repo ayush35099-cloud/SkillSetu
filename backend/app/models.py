@@ -29,11 +29,18 @@ class User(db.Model):
     def is_approved_assessor(self) -> bool:
         return self.role == "assessor" and self.verification_status == "approved"
 
+    def is_verified_contractor(self) -> bool:
+        if self.role != "contractor":
+            return False
+        if hasattr(self, "contractor_profile") and self.contractor_profile:
+            return self.contractor_profile.verification_status == "verified"
+        return self.verification_status in ("approved", "verified")
+
     def is_admin(self) -> bool:
         return self.role == "admin"
 
     def to_dict(self):
-        return {
+        data = {
             "id": self.id,
             "full_name": self.full_name,
             "email": self.email,
@@ -49,6 +56,10 @@ class User(db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
+        if hasattr(self, "contractor_profile") and self.contractor_profile:
+            data["contractor_profile"] = self.contractor_profile.to_dict()
+            data["is_contractor_verified"] = self.contractor_profile.verification_status == "verified"
+        return data
 
 
 class AssessmentTask(db.Model):
@@ -313,4 +324,228 @@ class SkillCredential(db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         })
+        return data
+
+
+class ContractorProfile(db.Model):
+    """Contractor / Employer Business Profile"""
+    __tablename__ = "contractor_profiles"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
+    company_name = db.Column(db.String(200), nullable=False)
+    business_type = db.Column(db.String(100), default="General Contractor")  # General Contractor, Subcontractor, etc.
+    gstin = db.Column(db.String(30), nullable=True)
+    business_address = db.Column(db.String(300), nullable=True)
+    city = db.Column(db.String(100), nullable=False, index=True)
+    state = db.Column(db.String(100), nullable=False, index=True)
+    verification_status = db.Column(db.String(50), default="pending", index=True)  # pending | verified | rejected
+    verified_at = db.Column(db.DateTime, nullable=True)
+    rejection_reason = db.Column(db.Text, nullable=True)
+    contact_email = db.Column(db.String(150), nullable=True)
+    contact_phone = db.Column(db.String(50), nullable=True)
+    website = db.Column(db.String(255), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = db.relationship("User", backref=db.backref("contractor_profile", uselist=False, cascade="all, delete-orphan"))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "company_name": self.company_name,
+            "business_type": self.business_type,
+            "gstin": self.gstin,
+            "business_address": self.business_address,
+            "city": self.city,
+            "state": self.state,
+            "verification_status": self.verification_status,
+            "is_verified": self.verification_status == "verified",
+            "verified_at": self.verified_at.isoformat() if self.verified_at else None,
+            "rejection_reason": self.rejection_reason,
+            "contact_email": self.contact_email,
+            "contact_phone": self.contact_phone,
+            "website": self.website,
+            "description": self.description,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class JobPosting(db.Model):
+    """Job Opportunity posted by a Contractor"""
+    __tablename__ = "job_postings"
+
+    id = db.Column(db.Integer, primary_key=True)
+    contractor_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = db.Column(db.String(200), nullable=False)
+    trade = db.Column(db.String(50), nullable=False, index=True)  # electrician, plumber, mason, etc.
+    description = db.Column(db.Text, nullable=False)
+    required_skills = db.Column(db.Text, nullable=True)
+    workers_needed = db.Column(db.Integer, default=1)
+    experience_years = db.Column(db.Integer, default=0)
+    location = db.Column(db.String(255), nullable=False)
+    city = db.Column(db.String(100), nullable=False, index=True)
+    state = db.Column(db.String(100), nullable=False, index=True)
+    employment_type = db.Column(db.String(50), default="Full-time")  # Full-time | Contract | Part-time | Day-wage
+    payment_type = db.Column(db.String(50), default="Monthly")  # Daily | Monthly | Project-based
+    wage_min = db.Column(db.Float, nullable=False)
+    wage_max = db.Column(db.Float, nullable=False)
+    duration = db.Column(db.String(100), nullable=True)  # e.g. "6 Months", "Immediate / Ongoing"
+    start_date = db.Column(db.String(100), nullable=True)  # e.g. "Immediate", "Within 1 Week"
+    working_hours = db.Column(db.String(100), nullable=True)  # e.g. "8 hrs / day, 9am - 5pm"
+    safety_requirements = db.Column(db.Text, nullable=True)
+    contact_details = db.Column(db.String(255), nullable=True)
+    status = db.Column(db.String(30), default="active", index=True)  # active | paused | closed
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    contractor = db.relationship("User", foreign_keys=[contractor_id], backref=db.backref("job_postings", cascade="all, delete-orphan"))
+    applications = db.relationship("JobApplication", backref="job", cascade="all, delete-orphan", order_by="JobApplication.applied_at.desc()")
+
+    def to_dict(self, include_contractor=True, include_counts=True):
+        data = {
+            "id": self.id,
+            "contractor_id": self.contractor_id,
+            "title": self.title,
+            "trade": self.trade,
+            "description": self.description,
+            "required_skills": self.required_skills,
+            "workers_needed": self.workers_needed,
+            "experience_years": self.experience_years,
+            "location": self.location,
+            "city": self.city,
+            "state": self.state,
+            "employment_type": self.employment_type,
+            "payment_type": self.payment_type,
+            "wage_min": self.wage_min,
+            "wage_max": self.wage_max,
+            "duration": self.duration,
+            "start_date": self.start_date,
+            "working_hours": self.working_hours,
+            "safety_requirements": self.safety_requirements,
+            "contact_details": self.contact_details,
+            "status": self.status,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+        if include_contractor and self.contractor:
+            prof = getattr(self.contractor, "contractor_profile", None)
+            data["company_name"] = prof.company_name if prof else self.contractor.full_name
+            data["contractor_name"] = self.contractor.full_name
+            data["contractor_verified"] = prof.verification_status == "verified" if prof else False
+        if include_counts:
+            data["applications_count"] = len(self.applications) if self.applications else 0
+        return data
+
+
+class JobApplication(db.Model):
+    """Worker Application for a Contractor Job Posting"""
+    __tablename__ = "job_applications"
+    __table_args__ = (
+        db.UniqueConstraint("job_id", "worker_id", name="uq_job_worker_application"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    job_id = db.Column(db.Integer, db.ForeignKey("job_postings.id", ondelete="CASCADE"), nullable=False, index=True)
+    worker_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    status = db.Column(db.String(30), default="applied", index=True)  # applied | under_review | shortlisted | rejected | hired | withdrawn
+    cover_note = db.Column(db.Text, nullable=True)
+    applied_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    worker = db.relationship("User", foreign_keys=[worker_id], backref=db.backref("job_applications", cascade="all, delete-orphan"))
+
+    def to_dict(self, include_job=True, include_worker=True):
+        data = {
+            "id": self.id,
+            "job_id": self.job_id,
+            "worker_id": self.worker_id,
+            "status": self.status,
+            "cover_note": self.cover_note,
+            "applied_at": self.applied_at.isoformat() if self.applied_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+        if include_job and self.job:
+            data["job_title"] = self.job.title
+            data["trade"] = self.job.trade
+            prof = getattr(self.job.contractor, "contractor_profile", None) if self.job.contractor else None
+            data["company_name"] = prof.company_name if prof else (self.job.contractor.full_name if self.job.contractor else "Contractor")
+            data["city"] = self.job.city
+            data["state"] = self.job.state
+            data["wage_min"] = self.job.wage_min
+            data["wage_max"] = self.job.wage_max
+            data["payment_type"] = self.job.payment_type
+            data["job_status"] = self.job.status
+        if include_worker and self.worker:
+            data["worker_name"] = self.worker.full_name
+            data["worker_location"] = self.worker.location
+            data["worker_trade"] = self.worker.specialisation
+            data["worker_experience"] = self.worker.years_of_experience
+            data["worker_qualification"] = self.worker.professional_qualification
+            # Look up verified skill credential
+            cred = SkillCredential.query.filter_by(worker_id=self.worker_id, status="active").first()
+            if cred:
+                data["has_verified_passport"] = True
+                data["credential_id"] = cred.credential_id
+                data["verification_token"] = cred.verification_token
+                data["verification_url"] = f"https://ayush35099-cloud.github.io/SkillSetu/verify/{cred.verification_token}"
+                data["skill_level"] = cred.skill_level
+            else:
+                data["has_verified_passport"] = False
+        return data
+
+
+class ContactRequest(db.Model):
+    """Direct Contact / Interview Request between Contractor and Worker"""
+    __tablename__ = "contact_requests"
+
+    id = db.Column(db.Integer, primary_key=True)
+    contractor_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    worker_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    job_id = db.Column(db.Integer, db.ForeignKey("job_postings.id", ondelete="SET NULL"), nullable=True, index=True)
+    message = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(30), default="pending", index=True)  # pending | accepted | declined
+    worker_contact_shared = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    responded_at = db.Column(db.DateTime, nullable=True)
+
+    contractor = db.relationship("User", foreign_keys=[contractor_id])
+    worker = db.relationship("User", foreign_keys=[worker_id])
+    job = db.relationship("JobPosting", foreign_keys=[job_id])
+
+    def to_dict(self):
+        data = {
+            "id": self.id,
+            "contractor_id": self.contractor_id,
+            "worker_id": self.worker_id,
+            "job_id": self.job_id,
+            "message": self.message,
+            "status": self.status,
+            "worker_contact_shared": self.worker_contact_shared,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "responded_at": self.responded_at.isoformat() if self.responded_at else None,
+        }
+        if self.contractor:
+            prof = getattr(self.contractor, "contractor_profile", None)
+            data["company_name"] = prof.company_name if prof else self.contractor.full_name
+            data["contractor_name"] = self.contractor.full_name
+            data["contractor_phone"] = self.contractor.phone
+            data["contractor_email"] = self.contractor.email
+        if self.worker:
+            data["worker_name"] = self.worker.full_name
+            data["worker_trade"] = self.worker.specialisation
+            data["worker_location"] = self.worker.location
+            if self.worker_contact_shared and self.status == "accepted":
+                data["worker_phone"] = self.worker.phone
+                data["worker_email"] = self.worker.email
+            else:
+                data["worker_phone"] = None
+                data["worker_email"] = None
+        if self.job:
+            data["job_title"] = self.job.title
         return data

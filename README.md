@@ -59,6 +59,8 @@ SkillSetu is entered under **Track 4 – UnlockED: Unlocking Educational Potenti
 | **Worker Portal (Interactive Demo)** | GitHub Pages | Active | [https://ayush35099-cloud.github.io/SkillSetu/worker](https://ayush35099-cloud.github.io/SkillSetu/worker) |
 | **Assessor Portal (Phase 3)** | GitHub Pages | Active | [https://ayush35099-cloud.github.io/SkillSetu/assessor](https://ayush35099-cloud.github.io/SkillSetu/assessor) |
 | **Admin Assessor Hub (Phase 3)** | GitHub Pages | Active | [https://ayush35099-cloud.github.io/SkillSetu/assessor/admin](https://ayush35099-cloud.github.io/SkillSetu/assessor/admin) |
+| **Contractor Hub (Phase 4)** | GitHub Pages | Active | [https://ayush35099-cloud.github.io/SkillSetu/contractor](https://ayush35099-cloud.github.io/SkillSetu/contractor) |
+| **Contractor Login (Phase 4)** | GitHub Pages | Active | [https://ayush35099-cloud.github.io/SkillSetu/contractor/login](https://ayush35099-cloud.github.io/SkillSetu/contractor/login) |
 | **Public QR Passport Verification** | GitHub Pages | Active | [https://ayush35099-cloud.github.io/SkillSetu/verify/verify-kavita-devi-solarpv-2026](https://ayush35099-cloud.github.io/SkillSetu/verify/verify-kavita-devi-solarpv-2026) |
 | **Backend REST API** | Render (Free Tier) | Active | [https://skillsetu-backend-47ww.onrender.com](https://skillsetu-backend-47ww.onrender.com) |
 | **Backend Service Health Probe** | Render | Active | [https://skillsetu-backend-47ww.onrender.com/api/health](https://skillsetu-backend-47ww.onrender.com/api/health) |
@@ -109,7 +111,7 @@ India possesses one of the world's largest vocational workforces, yet millions o
 
 ---
 
-## E. Current Implementation Status (Phases 1 & 2)
+## E. Current Implementation Status (Phases 1, 2, 3 & 4)
 
 We are committed to absolute transparency regarding what is implemented, what is an interactive demo prototype, and what is scheduled for future phases:
 
@@ -123,19 +125,23 @@ We are committed to absolute transparency regarding what is implemented, what is
 | **Theme Engine (Light, Dark, System)** | 2 | ✅ Implemented | `ThemeContext.jsx`, zero FOUC script in `index.html`, Tailwind tokens |
 | **Multilingual Engine (7 Languages)** | 2 | ✅ Implemented | English, Hindi, Kannada, Bengali, Marathi, Telugu, Tamil (`src/i18n/translations.js`) |
 | **Regional Personalisation (36 States/UTs)** | 2 | ✅ Implemented | Decoupled state engine in `src/data/regions.js` & `RegionContext.jsx` |
-| **Authentic Trade Photo Registry & High-Res Assets** | 2 | ✅ Implemented | Curated documentary photography with zero AI faces (`PHOTO_SOURCES.md`); 2048×1365 local WebP/JPG assets for About section |
+| **Authentic Trade Photo Registry & High-Res Assets** | 2 | ✅ Implemented | Curated documentary photography with zero AI faces (`PHOTO_SOURCES.md`); 2048×1365 local WebP/JPG assets for About section; electrical technician diagnostics photography |
 | **Worker Experience Portal** | 2 | ✅ Implemented | Responsive sidebar/topbar layout, quick stats (`src/pages/worker/WorkerLayout.jsx`) |
 | **Dynamic Profile Completion Metric** | 2 | ✅ Implemented | Dynamic calculation based on completed profile fields (`demoWorkerService.js`) |
 | **Worker Profile Management** | 2 | ✅ Implemented | Interactive editing with local state persistence (`src/pages/worker/WorkerProfile.jsx`) |
-| **Digital Skill Passport** | 2 | 🟡 Prototype (Demo State) | Visual credential layout with explicit demo disclaimers & non-functional QR code |
+| **Digital Skill Passport (QR Verification)** | 3 | ✅ Implemented | Cryptographically generated QR code linking to `/verify/:token` public verification page with revocation audit support |
 | **Practical Assessment Task Engine** | 3 | ✅ Implemented | 16 standardized practical assessment tasks across 8 trades stored in PostgreSQL (`backend/app/models.py`) |
 | **Occupational Rubrics (4 Criteria/Task)** | 3 | ✅ Implemented | 64 weighted rubric benchmarks with strict score validation (`backend/app/seeds.py`) |
 | **Assessor Cryptographic Authentication** | 3 | ✅ Implemented | Token-based auth (`URLSafeTimedSerializer`) with admin verification gate (`backend/app/auth.py`) |
 | **Assessor Portal & Evaluation Suite** | 3 | ✅ Implemented | Queue, video/photo demonstration inspector, rubric grading, decision engine (`frontend/src/pages/assessor/`) |
-| **Admin Assessor Verification Hub** | 3 | ✅ Implemented | Administrative reviewer approving/rejecting accredited evaluators (`AdminAssessors.jsx`) |
+| **Admin Governance Hub** | 3 & 4 | ✅ Implemented | Administrative reviewer approving assessors, issuing passports, verifying contractors, and deleting fraudulent jobs (`AdminAssessors.jsx`) |
 | **Worker Dashboard Live Assessment Sync** | 3 | ✅ Implemented | Live PostgreSQL evaluation status, composite scores, and assessor feedback (`WorkerDashboard.jsx`) |
-| **Job Opportunities Board** | 2 | 🟡 Prototype (Demo State) | Filterable trade opportunity listings with instant application simulator |
-| **Contractor Portal** | 4 | ⏳ Planned | Direct contractor hiring, verified candidate matching, and escrow-backed milestones |
+| **Contractor Hub & Authentication** | 4 | ✅ Implemented | Dedicated contractor registration/login with GSTIN validation, dashboard with metrics & active listings (`frontend/src/pages/contractor/`) |
+| **Job Posting Management (CRUD)** | 4 | ✅ Implemented | Job posting lifecycle for 8 trades with daily/monthly wage ranges and status toggles (`active`/`paused`/`closed`) |
+| **Verified Worker Discovery Marketplace** | 4 | ✅ Implemented | Search and filter verified artisans by trade and location without leaking worker phone/email (`ContractorWorkerSearch.jsx`) |
+| **Application & Hiring Lifecycle** | 4 | ✅ Implemented | Worker job board (`/worker/jobs`), 1-click apply, duplicate prevention, contractor applicant review, shortlist, and hiring status |
+| **Safe Contact Request Workflow** | 4 | ✅ Implemented | Contractor requests worker direct contact with proposed wage; worker accepts/declines; PII disclosed only upon consent |
+| **Public Navbar Polish** | 4 | ✅ Implemented | Removed diagnostic "API Status" link and "API Live" pill from public header; added sleek "Contractor Hub" nav link |
 | **Live AI Video Evaluation (Gemini)** | 6 | ⏳ Planned | Computer vision analysis of uploaded trade technique videos |
 | **Bidirectional Voice AI (Gemini Live)** | 5 | ⏳ Planned | Real-time speech-to-speech conversational assistant for unlettered workers |
 
