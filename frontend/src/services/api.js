@@ -123,11 +123,18 @@ export const apiService = {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
+    // Merge default JSON request headers safely
+    const finalHeaders = {
+      'Accept': 'application/json',
+      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      ...headers
+    };
+
     let response;
     try {
       response = await fetch(`${API_BASE_URL}${path}`, {
         method,
-        headers,
+        headers: finalHeaders,
         body: body !== undefined ? JSON.stringify(body) : undefined,
         signal: controller.signal
       });
@@ -490,19 +497,29 @@ export const apiService = {
   // Phase 4: Contractor Hub & Direct Hiring Marketplace APIs
   // --------------------------------------------------------------------------
   async contractorRegister(payload) {
-    return this._requestJson(
+    const data = await this._requestJson(
       '/api/auth/contractor/register',
-      { method: 'POST', body: payload },
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: payload
+      },
       'Contractor registration failed'
     );
+    return this._persistSession(data);
   },
 
   async contractorLogin(email, password) {
-    return this._requestJson(
+    const data = await this._requestJson(
       '/api/auth/contractor/login',
-      { method: 'POST', body: { email, password } },
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: { email, password }
+      },
       'Contractor login failed'
     );
+    return this._persistSession(data);
   },
 
   async getContractorProfile() {

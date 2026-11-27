@@ -353,6 +353,138 @@ class Phase4ContractorTestCase(unittest.TestCase):
         check_res = self.client.get(f"/api/worker/jobs/{job_id}")
         self.assertEqual(check_res.status_code, 404)
 
+    def test_08_contractor_registration_edge_cases_and_error_handling(self):
+        """Exhaustive validation of Section 5 requirements:
+        1. Valid registration (201)
+        2. Duplicate email (409)
+        3. Invalid email (400)
+        4. Missing required fields (400)
+        5. Password < 6 chars (400)
+        6. Incorrect Content-Type (415)
+        7. Invalid JSON (400)
+        8. Missing body (400)
+        9. Successful login (200)
+        10. Profile retrieval (200)
+        11. Dashboard access (200)
+        """
+        valid_payload = {
+            "full_name": "Vikramaditya Roy",
+            "company_name": "Roy Engineering & Infra Works",
+            "email": "vikram.roy@royinfra.com",
+            "password": "SecurePassword@2026",
+            "phone": "9830012345",
+            "business_address": "Sector V, Salt Lake City",
+            "city": "Kolkata",
+            "state": "West Bengal",
+            "business_type": "Civil & Infrastructure Contractor",
+            "gstin": "19AAACR1234F1Z1",
+            "website": "https://royinfra.example.com",
+            "description": "Specialized in bridge construction and Metro sub-structures."
+        }
+
+        # 1. Valid registration -> 201
+        res1 = self.client.post("/api/auth/contractor/register", json=valid_payload)
+        self.assertEqual(res1.status_code, 201)
+        data1 = res1.get_json()
+        self.assertEqual(data1["status"], "success")
+        self.assertIn("token", data1)
+        self.assertEqual(data1["user"]["role"], "contractor")
+        self.assertEqual(data1["user"]["verification_status"], "pending")
+
+        # Verify linked ContractorProfile
+        with self.app.app_context():
+            u = User.query.filter_by(email="vikram.roy@royinfra.com").first()
+            self.assertIsNotNone(u)
+            self.assertIsNotNone(u.contractor_profile)
+            self.assertEqual(u.contractor_profile.company_name, "Roy Engineering & Infra Works")
+            self.assertEqual(u.contractor_profile.city, "Kolkata")
+            self.assertEqual(u.contractor_profile.state, "West Bengal")
+
+        # 2. Duplicate email registration -> 409
+        res2 = self.client.post("/api/auth/contractor/register", json=valid_payload)
+        self.assertEqual(res2.status_code, 409)
+        data2 = res2.get_json()
+        self.assertEqual(data2["status"], "error")
+        self.assertIn("already exists", data2["message"])
+
+        # 3. Invalid email -> 400
+        bad_email_payload = dict(valid_payload)
+        bad_email_payload["email"] = "not-an-email"
+        res3 = self.client.post("/api/auth/contractor/register", json=bad_email_payload)
+        self.assertEqual(res3.status_code, 400)
+        self.assertIn("email", res3.get_json()["message"].lower())
+
+        # 4. Missing required fields -> 400
+        for req_field in ["full_name", "company_name", "email", "password", "city", "state"]:
+            missing_payload = dict(valid_payload)
+            missing_payload["email"] = f"test_{req_field}@royinfra.com"
+            missing_payload[req_field] = ""
+            res4 = self.client.post("/api/auth/contractor/register", json=missing_payload)
+            self.assertEqual(res4.status_code, 400, f"Expected 400 for empty {req_field}")
+            self.assertIn(req_field, res4.get_json()["message"])
+
+        # 5. Password shorter than 6 characters -> 400
+        short_pwd_payload = dict(valid_payload)
+        short_pwd_payload["email"] = "shortpwd@royinfra.com"
+        short_pwd_payload["password"] = "12345"
+        res5 = self.client.post("/api/auth/contractor/register", json=short_pwd_payload)
+        self.assertEqual(res5.status_code, 400)
+        self.assertIn("6 characters", res5.get_json()["message"])
+
+        # 6. Incorrect Content-Type (text/plain) -> 415
+        res6 = self.client.post(
+            "/api/auth/contractor/register",
+            data=json.dumps(valid_payload),
+            content_type="text/plain"
+        )
+        self.assertEqual(res6.status_code, 415)
+        self.assertEqual(res6.get_json()["status"], "error")
+        self.assertIn("Content-Type must be 'application/json'", res6.get_json()["message"])
+
+        # 7. Invalid JSON payload -> 400
+        res7 = self.client.post(
+            "/api/auth/contractor/register",
+            data="{invalid_json_body:",
+            content_type="application/json"
+        )
+        self.assertEqual(res7.status_code, 400)
+        self.assertEqual(res7.get_json()["status"], "error")
+
+        # 8. Missing request body -> 400
+        res8 = self.client.post(
+            "/api/auth/contractor/register",
+            data="",
+            content_type="application/json"
+        )
+        self.assertEqual(res8.status_code, 400)
+        self.assertEqual(res8.get_json()["status"], "error")
+
+        # 9. Successful contractor login after registration -> 200
+        res9 = self.client.post("/api/auth/contractor/login", json={
+            "email": "vikram.roy@royinfra.com",
+            "password": "SecurePassword@2026"
+        })
+        self.assertEqual(res9.status_code, 200)
+        data9 = res9.get_json()
+        self.assertEqual(data9["status"], "success")
+        self.assertIn("token", data9)
+        new_token = data9["token"]
+
+        # 10. Contractor profile retrieval -> 200
+        auth_hdr = {"Authorization": f"Bearer {new_token}"}
+        res10 = self.client.get("/api/contractor/profile", headers=auth_hdr)
+        self.assertEqual(res10.status_code, 200)
+        data10 = res10.get_json()
+        self.assertEqual(data10["profile"]["company_name"], "Roy Engineering & Infra Works")
+        self.assertEqual(data10["profile"]["city"], "Kolkata")
+
+        # 11. Contractor dashboard access -> 200
+        res11 = self.client.get("/api/contractor/dashboard", headers=auth_hdr)
+        self.assertEqual(res11.status_code, 200)
+        data11 = res11.get_json()
+        self.assertEqual(data11["status"], "success")
+        self.assertEqual(data11["stats"]["total_jobs"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

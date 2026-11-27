@@ -47,21 +47,11 @@ export default function LoginModal({ isOpen, onClose }) {
   };
 
   const getRoleNoticeTitle = () => {
-    switch (selectedRole) {
-      case 'contractor':
-        return 'Contractor Portal: Scheduled for Phase 4';
-      default:
-        return '';
-    }
+    return '';
   };
 
   const getRoleNoticeBody = () => {
-    switch (selectedRole) {
-      case 'contractor':
-        return 'Contractor onboarding and instant digital skill passport verification will activate in Phase 4. For now, please test the platform using the Worker or Assessor Portals.';
-      default:
-        return '';
-    }
+    return '';
   };
 
   return (
@@ -156,7 +146,7 @@ export default function LoginModal({ isOpen, onClose }) {
                     {t('loginModal.contractorOption', 'I am a Contractor / Builder')}
                   </h3>
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
-                    Phase 4 Live
+                    Direct Hiring Hub
                   </span>
                 </div>
                 <p className="text-xs text-greygreen dark:text-ivory/60 mt-0.5 leading-relaxed">
@@ -236,7 +226,7 @@ export default function LoginModal({ isOpen, onClose }) {
               onClick={handleContinue}
               className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-teal hover:bg-teal-800 text-white font-bold text-sm shadow-md shadow-teal/20 transition-all transform active:scale-[0.98]"
             >
-              <span>Enter Contractor Hub (Phase 4)</span>
+              <span>Enter Contractor Hub</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           ) : selectedRole === 'assessor' ? (

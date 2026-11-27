@@ -184,7 +184,30 @@ def assessor_register():
 
 def _authenticate_login(allowed_roles, invalid_msg, role_error_fn, success_msg):
     """Shared credential verification flow with safe SQLAlchemy error handling."""
-    data = request.get_json(silent=True) or {}
+    if not request.is_json:
+        return jsonify({
+            "status": "error",
+            "message": "Unsupported Media Type. Request Content-Type must be 'application/json'."
+        }), 415
+
+    raw_data = request.get_data(cache=True)
+    if not raw_data or not raw_data.strip():
+        return jsonify({
+            "status": "error",
+            "message": "Missing request body. A valid JSON payload is required."
+        }), 400
+
+    try:
+        data = request.get_json(silent=True)
+    except Exception:
+        data = None
+
+    if data is None or not isinstance(data, dict):
+        return jsonify({
+            "status": "error",
+            "message": "Invalid JSON format in request body."
+        }), 400
+
     email = (data.get("email") or "").strip().lower()
     password = data.get("password") or ""
 
@@ -342,25 +365,61 @@ def auth_me():
 
 @auth_bp.route("/contractor/register", methods=["POST"])
 def contractor_register():
-    data = request.get_json() or {}
-
-    full_name = data.get("full_name", "").strip()
-    company_name = data.get("company_name", "").strip()
-    email = data.get("email", "").strip().lower()
-    password = data.get("password", "")
-    phone = data.get("phone", "").strip()
-    business_address = data.get("business_address", "").strip()
-    city = data.get("city", "").strip()
-    state = data.get("state", "").strip()
-    business_type = data.get("business_type", "General Contractor").strip()
-    gstin = data.get("gstin", "").strip()
-    description = data.get("description", "").strip()
-    website = data.get("website", "").strip()
-
-    if not full_name or not company_name or not email or not password or not city or not state:
+    if not request.is_json:
         return jsonify({
             "status": "error",
-            "message": "Full name, company name, email address, password, city, and state are required."
+            "message": "Unsupported Media Type. Request Content-Type must be 'application/json'."
+        }), 415
+
+    raw_data = request.get_data(cache=True)
+    if not raw_data or not raw_data.strip():
+        return jsonify({
+            "status": "error",
+            "message": "Missing request body. A valid JSON payload is required."
+        }), 400
+
+    try:
+        data = request.get_json(silent=True)
+    except Exception:
+        data = None
+
+    if data is None or not isinstance(data, dict):
+        return jsonify({
+            "status": "error",
+            "message": "Invalid JSON format in request body."
+        }), 400
+
+    full_name = str(data.get("full_name") or "").strip()
+    company_name = str(data.get("company_name") or "").strip()
+    email = str(data.get("email") or "").strip().lower()
+    password = str(data.get("password") or "")
+    phone = str(data.get("phone") or "").strip()
+    business_address = str(data.get("business_address") or "").strip()
+    city = str(data.get("city") or "").strip()
+    state = str(data.get("state") or "").strip()
+    business_type = str(data.get("business_type") or "General Contractor").strip()
+    gstin = str(data.get("gstin") or "").strip()
+    description = str(data.get("description") or "").strip()
+    website = str(data.get("website") or "").strip()
+
+    missing_fields = []
+    if not full_name:
+        missing_fields.append("full_name")
+    if not company_name:
+        missing_fields.append("company_name")
+    if not email:
+        missing_fields.append("email")
+    if not password:
+        missing_fields.append("password")
+    if not city:
+        missing_fields.append("city")
+    if not state:
+        missing_fields.append("state")
+
+    if missing_fields:
+        return jsonify({
+            "status": "error",
+            "message": f"Missing required fields: {', '.join(missing_fields)}."
         }), 400
 
     if len(password) < 6:
@@ -369,7 +428,7 @@ def contractor_register():
             "message": "Password must be at least 6 characters long."
         }), 400
 
-    if not re.match(r"^[^@]+@[^@]+\.[^@]+$", email):
+    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
         return jsonify({
             "status": "error",
             "message": "Invalid email address format."
@@ -383,36 +442,51 @@ def contractor_register():
 
     location_str = f"{city}, {state}" if city and state else city or state or "India"
 
-    user = User(
-        full_name=full_name,
-        email=email,
-        phone=phone,
-        location=location_str,
-        role="contractor",
-        specialisation="contractor",
-        verification_status="pending"
-    )
-    user.set_password(password)
+    try:
+        user = User(
+            full_name=full_name,
+            email=email,
+            phone=phone if phone else None,
+            location=location_str,
+            role="contractor",
+            specialisation="contractor",
+            verification_status="pending"
+        )
+        user.set_password(password)
 
-    db.session.add(user)
-    db.session.flush()
+        db.session.add(user)
+        db.session.flush()
 
-    profile = ContractorProfile(
-        user_id=user.id,
-        company_name=company_name,
-        business_type=business_type,
-        gstin=gstin if gstin else None,
-        business_address=business_address if business_address else None,
-        city=city,
-        state=state,
-        verification_status="pending",
-        contact_email=email,
-        contact_phone=phone,
-        website=website if website else None,
-        description=description if description else None
-    )
-    db.session.add(profile)
-    db.session.commit()
+        profile = ContractorProfile(
+            user_id=user.id,
+            company_name=company_name,
+            business_type=business_type or "General Contractor",
+            gstin=gstin if gstin else None,
+            business_address=business_address if business_address else None,
+            city=city,
+            state=state,
+            verification_status="pending",
+            contact_email=email,
+            contact_phone=phone if phone else None,
+            website=website if website else None,
+            description=description if description else None
+        )
+        db.session.add(profile)
+        db.session.commit()
+    except SQLAlchemyError as exc:
+        db.session.rollback()
+        current_app.logger.error(f"Contractor registration failed with database error: {sanitize_db_error(exc)}")
+        return jsonify({
+            "status": "error",
+            "message": "Registration failed due to a database error. Please try again."
+        }), 500
+    except Exception as exc:
+        db.session.rollback()
+        current_app.logger.error(f"Unexpected error in contractor registration: {str(exc)}")
+        return jsonify({
+            "status": "error",
+            "message": "Registration failed due to an unexpected error. Please try again."
+        }), 500
 
     token = generate_token(user.id, user.role)
 

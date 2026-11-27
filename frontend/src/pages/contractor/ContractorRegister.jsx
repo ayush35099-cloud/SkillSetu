@@ -53,8 +53,13 @@ export default function ContractorRegister() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (!formData.companyName.trim() || !formData.fullName.trim() || !formData.email.trim() || !formData.password) {
-      setErrorMsg('Company name, contact person name, email, and password are required.');
+    if (!formData.companyName.trim() || !formData.fullName.trim() || !formData.email.trim() || !formData.password || !formData.city.trim()) {
+      setErrorMsg('Company name, contact person name, email, password, and city are required.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      setErrorMsg('Please enter a valid email address format.');
       return;
     }
 
@@ -74,9 +79,9 @@ export default function ContractorRegister() {
         password: formData.password,
         phone: formData.phone.trim(),
         business_address: formData.businessAddress.trim(),
-        city: formData.city.trim() || 'Mumbai',
+        city: formData.city.trim(),
         state: formData.state,
-        business_type: formData.businessType,
+        business_type: formData.businessType || 'General Contractor',
         gstin: formData.gstin.trim(),
         website: formData.website.trim(),
         description: formData.description.trim()

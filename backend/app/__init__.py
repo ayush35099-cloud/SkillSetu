@@ -63,12 +63,27 @@ def create_app(config_class=Config):
     app.register_blueprint(admin_bp)
 
     # Error handlers
+    @app.errorhandler(400)
+    def bad_request(error):
+        msg = getattr(error, "description", None) or "Bad request."
+        return jsonify({
+            "status": "error",
+            "message": str(msg)
+        }), 400
+
     @app.errorhandler(404)
     def not_found(error):
         return jsonify({
             "status": "error",
             "message": "Resource not found"
         }), 404
+
+    @app.errorhandler(415)
+    def unsupported_media_type(error):
+        return jsonify({
+            "status": "error",
+            "message": "Unsupported Media Type. Request Content-Type must be 'application/json'."
+        }), 415
 
     @app.errorhandler(500)
     def internal_error(error):
